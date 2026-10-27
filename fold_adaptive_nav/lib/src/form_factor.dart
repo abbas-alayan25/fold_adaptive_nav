@@ -21,17 +21,30 @@ enum FormFactor {
 /// Size comes first, so the answer follows Split View, Stage Manager and
 /// freeform windows. The fold state only tells a closed foldable's cover
 /// display from a phone of the same size.
+///
+/// [FoldAdaptiveConfig.formFactorResolver], when set, has the last word.
 FormFactor resolveFormFactor({
   required Size window,
   required FoldState fold,
   FoldAdaptiveConfig config = const FoldAdaptiveConfig(),
 }) {
+  final suggested = _defaultFormFactor(window, fold, config);
+  final resolver = config.formFactorResolver;
+  return resolver == null ? suggested : resolver(window, fold, suggested);
+}
+
+FormFactor _defaultFormFactor(
+  Size window,
+  FoldState fold,
+  FoldAdaptiveConfig config,
+) {
   final shortest = window.shortestSide;
   if (shortest >= config.mediumBreakpoint) return FormFactor.tablet;
   // A cover display is wider than any phone's but much less tall for its
   // width: phones run 1.78 (iPhone SE) to 2.2; the iPhone Duo's cover is 1.46.
   final squat = shortest >= 440 && window.longestSide / shortest < 1.6;
-  if (squat || (fold.isFoldable && fold.posture == HingePosture.closed)) {
+  final closed = fold.isFoldable && fold.posture == HingePosture.closed;
+  if (squat || (closed && shortest >= config.coverMinShortestSide)) {
     return FormFactor.cover;
   }
   return FormFactor.phone;

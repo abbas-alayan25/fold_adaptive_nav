@@ -8,6 +8,8 @@ import 'form_factor.dart';
 ///
 /// Foldables follow their posture: the cover display uses
 /// [FoldAdaptiveConfig.coverOrientations], an opened foldable turns freely.
+/// An opened flip phone (a phone-sized window with a fold in it) is a phone,
+/// unless [FoldAdaptiveConfig.treatOpenedFlipsAsPhones] is off.
 /// Everything else follows the window: tablets turn freely, phones stay in
 /// portrait unless [FoldAdaptiveConfig.lockPhonesToPortrait] is off.
 List<DeviceOrientation> orientationsFor(
@@ -21,7 +23,12 @@ List<DeviceOrientation> orientationsFor(
         return config.coverOrientations;
       case HingePosture.partiallyOpen:
       case HingePosture.fullyOpen:
-        return DeviceOrientation.values;
+        // A book foldable's window still on its outer display while it
+        // opens has no fold in it, and must not be locked.
+        final flip = config.treatOpenedFlipsAsPhones &&
+            formFactor == FormFactor.phone &&
+            fold.folds.isNotEmpty;
+        if (!flip) return DeviceOrientation.values;
       case HingePosture.unknown:
         break; // No reading yet: use the window.
     }

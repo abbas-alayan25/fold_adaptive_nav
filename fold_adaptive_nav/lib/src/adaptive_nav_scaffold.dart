@@ -114,6 +114,9 @@ class AdaptiveNavScaffold extends StatefulWidget {
   /// Default width of the cover display's rail.
   static const double railWidth = 88;
 
+  /// Default width of the compact cover rail, on narrow covers.
+  static const double compactRailWidth = 64;
+
   /// The bottom of the safe area the home indicator itself takes. A
   /// floating bottom bar may overlap the rest of that area.
   static const double homeIndicatorHeight = 13;
@@ -188,19 +191,29 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     AdaptiveNavStyle style,
     FoldAdaptiveConfig config,
   ) {
+    final compact =
+        MediaQuery.sizeOf(context).width < config.compactCoverRailBelow;
+    // A compact rail has no room for labels; screen readers still get them.
+    final railStyle = compact
+        ? style.merge(const AdaptiveNavStyle(
+            labelBehavior: NavLabelBehavior.alwaysHide,
+          ))
+        : style;
     return Scaffold(
       appBar: appBar,
       backgroundColor: widget.backgroundColor,
       body: SideLayout(
         railSide: config.coverRailSide,
-        sideWidth: style.railWidth ?? AdaptiveNavScaffold.railWidth,
+        sideWidth: compact
+            ? style.compactRailWidth ?? AdaptiveNavScaffold.compactRailWidth
+            : style.railWidth ?? AdaptiveNavScaffold.railWidth,
         content: body,
         side: SideRail(
           destinations: destinations,
           currentIndex: currentIndex,
           onSelect: onSelect,
           trailingAction: trailingAction,
-          style: style,
+          style: railStyle,
         ),
       ),
     );

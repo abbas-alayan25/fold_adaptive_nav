@@ -43,6 +43,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     this.barBorderRadius,
     this.barMargin,
     this.railWidth,
+    this.compactRailWidth,
     this.railAlignment,
     this.animationDuration,
   });
@@ -93,6 +94,11 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// [AdaptiveNavScaffold.railWidth]).
   final double? railWidth;
 
+  /// Width of the compact cover rail, on covers narrower than
+  /// `FoldAdaptiveConfig.compactCoverRailBelow` (default:
+  /// [AdaptiveNavScaffold.compactRailWidth]). Its labels are hidden.
+  final double? compactRailWidth;
+
   /// Where the cover rail's tabs sit, for alignments
   /// `FoldAdaptiveConfig.coverRailAlignment` doesn't offer (such as
   /// [MainAxisAlignment.spaceEvenly]). Wins over that setting when set.
@@ -126,6 +132,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barBorderRadius: other.barBorderRadius,
       barMargin: other.barMargin,
       railWidth: other.railWidth,
+      compactRailWidth: other.compactRailWidth,
       railAlignment: other.railAlignment,
       animationDuration: other.animationDuration,
     );
@@ -148,6 +155,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     BorderRadius? barBorderRadius,
     EdgeInsets? barMargin,
     double? railWidth,
+    double? compactRailWidth,
     MainAxisAlignment? railAlignment,
     Duration? animationDuration,
   }) {
@@ -167,6 +175,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barBorderRadius: barBorderRadius ?? this.barBorderRadius,
       barMargin: barMargin ?? this.barMargin,
       railWidth: railWidth ?? this.railWidth,
+      compactRailWidth: compactRailWidth ?? this.compactRailWidth,
       railAlignment: railAlignment ?? this.railAlignment,
       animationDuration: animationDuration ?? this.animationDuration,
     );
@@ -195,6 +204,8 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
           BorderRadius.lerp(barBorderRadius, other.barBorderRadius, t),
       barMargin: EdgeInsets.lerp(barMargin, other.barMargin, t),
       railWidth: lerpDouble(railWidth, other.railWidth, t),
+      compactRailWidth:
+          lerpDouble(compactRailWidth, other.compactRailWidth, t),
       railAlignment: pick(railAlignment, other.railAlignment),
       animationDuration: pick(animationDuration, other.animationDuration),
     );
@@ -218,6 +229,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       other.barBorderRadius == barBorderRadius &&
       other.barMargin == barMargin &&
       other.railWidth == railWidth &&
+      other.compactRailWidth == compactRailWidth &&
       other.railAlignment == railAlignment &&
       other.animationDuration == animationDuration;
 
@@ -238,6 +250,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
         barBorderRadius,
         barMargin,
         railWidth,
+        compactRailWidth,
         railAlignment,
         animationDuration,
       );

@@ -1,3 +1,27 @@
+## 1.3.0
+
+* Opened flip phones (Galaxy Z Flip, Razr) follow `lockPhonesToPortrait` like
+  any phone instead of turning freely. A phone-sized window with a fold in it
+  counts as a flip; `FoldAdaptiveConfig.treatOpenedFlipsAsPhones: false`
+  restores the old behaviour.
+* Covers narrower than `FoldAdaptiveConfig.compactCoverRailBelow` (400 pt)
+  get a compact, 64 pt rail without labels (`AdaptiveNavStyle.compactRailWidth`).
+* Add `FoldAdaptiveConfig.coverMinShortestSide`, to give narrow covers the
+  phone layout, and `FoldAdaptiveConfig.formFactorResolver`, to decide the
+  form factor yourself.
+* Add `FoldSplitView` and `resolveFoldSplit`: two panes that meet at the
+  fold, or split a wide tablet window.
+* Add `TabletopLayout` for half-open devices with the fold across.
+* Add `FoldSafeArea` and `cameraInsets`, to keep content clear of camera
+  housings.
+* Add `WindowSizeClass`, `context.windowSizeClass`, `context.adaptive` and
+  `AdaptiveBuilder`.
+* Add `FoldListener` for posture and form factor changes.
+* Add `showAdaptiveSheet`: a bottom sheet on phones, a dialog on tablets.
+* Add `FoldDevicePreset` and `FoldPreview`, to render an app as on a
+  foldable in tests and previews.
+* Add `FoldDebugOverlay`.
+
 ## 1.2.1
 
 * Fix the blank strip under the bottom bar on phones with a home indicator.

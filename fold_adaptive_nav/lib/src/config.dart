@@ -1,5 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:fold_adaptive_nav_platform_interface/fold_adaptive_nav_platform_interface.dart';
+
+import 'form_factor.dart';
+
+/// Decides the form factor in place of [resolveFormFactor]. [suggested] is
+/// what the package would pick; return it to keep the default.
+typedef FormFactorResolver = FormFactor Function(
+  Size window,
+  FoldState fold,
+  FormFactor suggested,
+);
 
 /// Where the cover display's rail and thumb column go.
 enum RailSide {
@@ -62,6 +73,10 @@ class FoldAdaptiveConfig {
     this.mediumBreakpoint = 600,
     this.expandedBreakpoint = 840,
     this.tabletBottomBarMaxWidth = 560,
+    this.coverMinShortestSide = 0,
+    this.compactCoverRailBelow = 400,
+    this.treatOpenedFlipsAsPhones = true,
+    this.formFactorResolver,
   });
 
   final RailSide coverRailSide;
@@ -89,6 +104,29 @@ class FoldAdaptiveConfig {
   /// Width cap of the tablet bottom bar; full width at 1366 pt looks broken.
   final double tabletBottomBarMaxWidth;
 
+  /// A closed foldable whose display is narrower than this on its shortest
+  /// side gets the phone layout instead of the cover layout. 0, the default,
+  /// gives every closed foldable the cover layout.
+  ///
+  /// Narrow covers such as a Galaxy Z Fold's (about 344–373 pt) are shaped
+  /// like phones; 380 sends them to the phone layout while the Pixel Fold
+  /// (412 pt) and iPhone Duo (466 pt) covers keep the rail.
+  final double coverMinShortestSide;
+
+  /// Below this window width the cover rail is compact: narrower
+  /// ([AdaptiveNavStyle.compactRailWidth]) and without labels.
+  final double compactCoverRailBelow;
+
+  /// An opened foldable in a phone-sized window, with a fold reported in it,
+  /// is a flip phone (Galaxy Z Flip, Razr): it follows
+  /// [lockPhonesToPortrait] like any phone. Off, it turns freely like any
+  /// opened foldable.
+  final bool treatOpenedFlipsAsPhones;
+
+  /// Overrides the form factor decision. Use a top-level or static function
+  /// so the config stays `const` and compares equal across rebuilds.
+  final FormFactorResolver? formFactorResolver;
+
   @override
   bool operator ==(Object other) =>
       other is FoldAdaptiveConfig &&
@@ -100,7 +138,11 @@ class FoldAdaptiveConfig {
       other.manageOrientations == manageOrientations &&
       other.mediumBreakpoint == mediumBreakpoint &&
       other.expandedBreakpoint == expandedBreakpoint &&
-      other.tabletBottomBarMaxWidth == tabletBottomBarMaxWidth;
+      other.tabletBottomBarMaxWidth == tabletBottomBarMaxWidth &&
+      other.coverMinShortestSide == coverMinShortestSide &&
+      other.compactCoverRailBelow == compactCoverRailBelow &&
+      other.treatOpenedFlipsAsPhones == treatOpenedFlipsAsPhones &&
+      other.formFactorResolver == formFactorResolver;
 
   @override
   int get hashCode => Object.hash(
@@ -113,5 +155,9 @@ class FoldAdaptiveConfig {
         mediumBreakpoint,
         expandedBreakpoint,
         tabletBottomBarMaxWidth,
+        coverMinShortestSide,
+        compactCoverRailBelow,
+        treatOpenedFlipsAsPhones,
+        formFactorResolver,
       );
 }

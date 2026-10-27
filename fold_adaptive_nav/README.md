@@ -10,7 +10,18 @@ and switches your app's navigation by itself:
 | Foldable, opened | Same as tablet | Same as tablet | All |
 | Tablet | Bottom bar capped at 560 pt (or a rail) | Bottom, or a side panel from 840 pt | All |
 
-You add one widget and no device checks.
+You add one widget and no device checks. For the content itself there are
+panes that meet at the fold (`FoldSplitView`, `TabletopLayout`),
+`FoldSafeArea`, per-form-factor values and device presets for tests.
+
+## Devices
+
+| Device | Status |
+|---|---|
+| Pixel Fold | Tested on the device (screenshots below) |
+| iPhone Duo | Tested on the device (screenshots below) |
+| Galaxy Z Fold, Galaxy Z Flip, other Android foldables | Should work through Jetpack WindowManager; covered by presets in the tests, not yet checked on the devices |
+| Phones, tablets, iPad Split View, Stage Manager | Layout follows the window size |
 
 ## Screenshots
 
@@ -55,6 +66,10 @@ the device; the layout follows `FoldScope`.
          ),
        );
    ```
+
+   Opened flip phones (Galaxy Z Flip, Razr) count as phones and follow
+   `lockPhonesToPortrait`; set `treatOpenedFlipsAsPhones: false` to let them
+   turn.
 
    Don't call `SystemChrome.setPreferredOrientations` in `main()`. `FoldScope`
    sets orientations once the first fold reading arrives; locking portrait
@@ -136,6 +151,29 @@ FoldScope(
 
 The trailing action moves with the tabs. Bottom is the default because it's
 where the thumb rests.
+
+### Narrow covers
+
+Covers narrower than `compactCoverRailBelow` (400 pt) get a compact rail:
+64 pt wide (`AdaptiveNavStyle.compactRailWidth`) with no labels, which screen
+readers still read out. That covers the Galaxy Z Fold and Z Flip outer
+displays; the Pixel Fold (412 pt) and iPhone Duo (466 pt) keep the full rail.
+
+To give narrow covers the phone layout instead, with a bottom bar:
+
+```dart
+const FoldAdaptiveConfig(coverMinShortestSide: 380)
+```
+
+For anything else, decide the form factor yourself. Use a top-level or
+static function so the config stays `const`:
+
+```dart
+FormFactor myFormFactor(Size window, FoldState fold, FormFactor suggested) =>
+    window.width < 360 ? FormFactor.phone : suggested;
+
+const FoldAdaptiveConfig(formFactorResolver: myFormFactor)
+```
 
 ### Custom icons (SVG, PNG)
 
@@ -224,6 +262,23 @@ that area: on an iPhone it sits 21 pt from the bottom, not 34 pt. A flat bar
 (`barMargin` with a bottom of 0) fills the area down to the screen edge and
 keeps its tabs above the indicator.
 
+### With go_router
+
+`AdaptiveNavScaffold` takes an index and a callback, so it fits a
+`StatefulShellRoute`, and each tab keeps its own history:
+
+```dart
+StatefulShellRoute.indexedStack(
+  builder: (context, state, shell) => AdaptiveNavScaffold(
+    destinations: destinations,
+    currentIndex: shell.currentIndex,
+    onSelect: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
+    body: shell,
+  ),
+  branches: [...],
+)
+```
+
 ## Flows
 
 ```dart
@@ -248,6 +303,98 @@ Scaffold(
 - `FlowProgress` / `FlowProgressColumn` show the step and a row or column of dots.
 - `CoverActionRow` is for screens that aren't scrolling forms.
 
+## Content
+
+### Panes at the fold
+
+```dart
+FoldSplitView(
+  start: const MessageList(),
+  end: const MessageDetail(),
+)
+```
+
+| Device | Shows |
+|---|---|
+| Book foldable opened, flat or half open | `start` \| `end`, meeting at the fold |
+| Half open with the fold across (tabletop, Flex mode) | `start` above, `end` below the fold |
+| Tablet window from 840 pt wide | `start` \| `end` at `wideSplit` (0.5) |
+| Anything else | `start` alone |
+
+`mode: FoldSplitMode.hinge` splits only at a real fold, `.tabletop` only
+when half open with the fold across. A flat flip phone is one screen and
+never splits. Both panes keep their state while the layout changes.
+
+For a list and detail, show the detail on its own on phones while an item
+is open:
+
+```dart
+FoldSplitView(
+  start: MessageList(onOpen: (id) => setState(() => openId = id)),
+  end: openId == null ? const EmptyDetail() : MessageDetail(id: openId!),
+  singleBuilder: (context, list, detail) => openId == null
+      ? list
+      : PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) => setState(() => openId = null),
+          child: detail,
+        ),
+)
+```
+
+### Tabletop
+
+```dart
+TabletopLayout(
+  top: VideoPlayer(controller),
+  bottom: const PlayerControls(),
+)
+```
+
+`top` sits above the fold and `bottom` below while the device stands half
+open; otherwise `top` fills the space above `bottom` (change that with
+`flatBuilder`). The video keeps playing across the change.
+`TabletopLayout.isTabletop(state)` answers the same question in code.
+
+### Camera housings
+
+`FoldSafeArea` is a `SafeArea` that also keeps its child clear of the camera
+and sensor housings the platform reports, such as the iPhone Duo's on its
+cover display. To keep content off the fold, use `FoldSplitView`.
+
+### Values per form factor
+
+```dart
+final columns = context.adaptive(phone: 2, cover: 3, tablet: 4);
+context.windowSizeClass; // compact, medium, expanded, large, extraLarge
+
+AdaptiveBuilder(
+  phone: (_) => const CompactList(),
+  tablet: (_) => const GridOfCards(),   // cover falls back to phone
+)
+```
+
+### Sheets
+
+`showAdaptiveSheet(context: context, builder: ...)` shows a bottom sheet on
+phones and the cover display, and a dialog of at most 560 pt on tablets and
+opened foldables.
+
+### Reacting to folding
+
+```dart
+FoldListener(
+  onPostureChanged: (previous, current) {
+    if (current == HingePosture.closed) player.pause();
+  },
+  onFormFactorChanged: (previous, current) => saveDraft(),
+  child: ...,
+)
+```
+
+The callbacks run after the frame that shows the change, so they may call
+`setState`; the first reading isn't reported.
+
 ## Reading the state
 
 ```dart
@@ -270,7 +417,43 @@ If it did, Flutter would keep every dialog, sheet and menu to one half of the
 inner display. Opt in with `FoldScope(bridge: DisplayFeatureBridge.cutoutsOnly)`
 or `.full`. `.full` publishes the fold only while the device is partly open.
 
+## Debugging
+
+```dart
+MaterialApp(
+  builder: (context, child) =>
+      FoldDebugOverlay(enabled: kDebugMode, child: child!),
+)
+```
+
+draws a label with the form factor, posture, hinge angle, window size and
+size classes, the fold in red and camera housings in orange.
+
 ## Testing
+
+### Device presets
+
+`FoldPreview` renders an app as it would look on a device, without the
+device, and stands in for `FoldScope`. Run one test on every preset:
+
+```dart
+for (final preset in FoldDevicePreset.all) {
+  testWidgets('checkout on ${preset.name}', (tester) async {
+    await tester.pumpWidget(FoldPreview(preset: preset, child: const MyApp()));
+    ...
+  });
+}
+```
+
+Presets: `phone`, `tablet`, `iPhoneDuoCover`, `iPhoneDuoOpen`,
+`pixelFoldCover`, `pixelFoldOpen`, `pixelFoldTabletop`, `galaxyZFoldCover`,
+`galaxyZFoldOpen`, `galaxyZFlipCover`, `galaxyZFlipOpen`, `galaxyZFlipFlex`.
+`preset.rotated` turns one a quarter. The sizes are approximate: close
+enough to pick the device's layout, not a replacement for the device.
+`FoldPreview` scales to fit, so `tester.getSize` gives the preset's sizes
+while `getTopLeft` gives scaled screen positions.
+
+### Driving `FoldScope`
 
 ```dart
 final states = StreamController<FoldState>(sync: true);
