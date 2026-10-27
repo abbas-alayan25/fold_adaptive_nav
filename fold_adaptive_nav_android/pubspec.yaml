@@ -1,0 +1,32 @@
+name: fold_adaptive_nav_android
+description: >-
+  Android implementation of fold_adaptive_nav: foldable detection, posture and
+  fold geometry through Jetpack WindowManager and the hinge angle sensor.
+version: 1.0.0
+repository: https://github.com/your-org/fold_adaptive_nav/tree/main/fold_adaptive_nav_android
+topics: [foldable, adaptive, navigation]
+
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+  flutter: ">=3.38.0"
+
+flutter:
+  plugin:
+    implements: fold_adaptive_nav
+    platforms:
+      android:
+        package: dev.foldadaptivenav.fold_adaptive_nav_android
+        pluginClass: FoldAdaptiveNavAndroidPlugin
+        dartPluginClass: FoldAdaptiveNavAndroid
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fold_adaptive_nav_platform_interface: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

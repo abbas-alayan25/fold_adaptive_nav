@@ -1,0 +1,13 @@
+# Development-only pub workspace. Each member depends on the others by
+# version (`^1.0.0`), which the workspace resolves to the local checkouts,
+# so every package can be published as-is with `dart pub publish`.
+name: fold_adaptive_nav_workspace
+publish_to: none
+environment:
+  sdk: ^3.6.0
+workspace:
+  - fold_adaptive_nav
+  - fold_adaptive_nav/example
+  - fold_adaptive_nav_platform_interface
+  - fold_adaptive_nav_ios
+  - fold_adaptive_nav_android

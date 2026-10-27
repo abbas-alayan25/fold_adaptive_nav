@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - fold_adaptive_nav_ios (1.0.0):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - fold_adaptive_nav_ios (from `.symlinks/plugins/fold_adaptive_nav_ios/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  fold_adaptive_nav_ios:
+    :path: ".symlinks/plugins/fold_adaptive_nav_ios/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  fold_adaptive_nav_ios: 9bfa94eeffbace378dcc3c187d26a59951942280
+
+PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
+
+COCOAPODS: 1.16.2

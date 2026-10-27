@@ -1,0 +1,23 @@
+name: fold_adaptive_nav_example
+description: "Shows fold_adaptive_nav on phones, foldables and tablets."
+publish_to: none
+version: 1.0.0+1
+
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fold_adaptive_nav: ^1.0.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

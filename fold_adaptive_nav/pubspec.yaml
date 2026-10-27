@@ -1,0 +1,34 @@
+name: fold_adaptive_nav
+description: >-
+  Detects foldables and their posture on iOS and Android, and adapts navigation
+  by itself: bottom bar on phones, thumb rail on cover displays, tablet layouts
+  when open.
+version: 1.0.0
+repository: https://github.com/your-org/fold_adaptive_nav/tree/main/fold_adaptive_nav
+topics: [foldable, adaptive, navigation, responsive]
+
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+  flutter: ">=3.38.0"
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        default_package: fold_adaptive_nav_ios
+      android:
+        default_package: fold_adaptive_nav_android
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fold_adaptive_nav_platform_interface: ^1.0.0
+  fold_adaptive_nav_ios: ^1.0.0
+  fold_adaptive_nav_android: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
