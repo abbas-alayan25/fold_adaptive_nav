@@ -12,6 +12,25 @@ and switches your app's navigation by itself:
 
 You add one widget and no device checks.
 
+## Screenshots
+
+The example app on a closed and an opened foldable. Nothing in the app checks
+the device; the layout follows `FoldScope`.
+
+### Android (Pixel Fold)
+
+| Closed: cover display | Opened |
+|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_tabs.png" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_open_tabs.png" height="420" alt="Opened display with a bottom bar"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_flow.png" height="420" alt="Flow step with a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_open_flow.png" height="420" alt="Flow step with a side panel"> |
+
+### iOS (iPhone Duo)
+
+| Closed: cover display | Opened |
+|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_tabs.png" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_tabs.png" height="300" alt="Opened display with a bottom bar"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_flow.png" height="420" alt="Flow step with a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_flow.png" height="300" alt="Flow step with a side panel"> |
+
 ## Setup
 
 1. Add the package:

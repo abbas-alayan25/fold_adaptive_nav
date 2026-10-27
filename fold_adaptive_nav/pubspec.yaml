@@ -3,9 +3,31 @@ description: >-
   Detects foldables and their posture on iOS and Android, and adapts navigation
   by itself: bottom bar on phones, thumb rail on cover displays, tablet layouts
   when open.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav
 topics: [foldable, adaptive, navigation, responsive]
+
+screenshots:
+  - description: Closed Pixel Fold. The cover display gets a rail on the right, under the thumb.
+    path: screenshots/android_cover_tabs.png
+  - description: Opened Pixel Fold. The same app switches to the tablet layout with a bottom bar.
+    path: screenshots/android_open_tabs.png
+  - description: A flow step on the cover display. The action moves into a thumb column on the right.
+    path: screenshots/android_cover_flow.png
+  - description: The same flow step opened. Progress and the action move into a side panel.
+    path: screenshots/android_open_flow.png
+  - description: Closed iPhone Duo. Posture, hinge angle and camera regions come from UIKit.
+    path: screenshots/ios_cover_tabs.png
+  - description: Opened iPhone Duo. Tablet layout, with the fold reported as a reserved region.
+    path: screenshots/ios_open_tabs.png
+  - description: A flow step on the iPhone Duo cover display.
+    path: screenshots/ios_cover_flow.png
+  - description: The same flow step on the opened iPhone Duo.
+    path: screenshots/ios_open_flow.png
+  - description: Review step on the opened iPhone Duo, with a checkbox footer and two actions.
+    path: screenshots/ios_open_review.png
+  - description: Review step on the opened Pixel Fold.
+    path: screenshots/android_open_review.png
 
 resolution: workspace
 
