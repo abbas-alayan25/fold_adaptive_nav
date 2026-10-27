@@ -3,7 +3,7 @@ description: >-
   Android implementation of fold_adaptive_nav: foldable detection, posture and
   fold geometry through Jetpack WindowManager and the hinge angle sensor.
 version: 1.0.0
-repository: https://github.com/your-org/fold_adaptive_nav/tree/main/fold_adaptive_nav_android
+repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav_android
 topics: [foldable, adaptive, navigation]
 
 resolution: workspace

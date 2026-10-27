@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
 Hinge posture, fold and camera regions, size classes and the vertical system
 bar on iPhone Duo, for the fold_adaptive_nav Flutter plugin.
                        DESC
-  s.homepage         = 'https://github.com/your-org/fold_adaptive_nav'
+  s.homepage         = 'https://github.com/abbas-alayan25/fold_adaptive_nav'
   s.license          = { :type => 'BSD-3-Clause', :file => '../LICENSE' }
   s.author           = { 'Abbas Alayan' => 'abbasalayan1222@gmail.com' }
   s.source           = { :path => '.' }
