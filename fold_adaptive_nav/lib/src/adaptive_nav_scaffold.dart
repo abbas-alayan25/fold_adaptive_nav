@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'config.dart';
@@ -111,6 +113,10 @@ class AdaptiveNavScaffold extends StatefulWidget {
 
   /// Default width of the cover display's rail.
   static const double railWidth = 88;
+
+  /// The bottom of the safe area the home indicator itself takes. A
+  /// floating bottom bar may overlap the rest of that area.
+  static const double homeIndicatorHeight = 13;
 
   @override
   State<AdaptiveNavScaffold> createState() => _AdaptiveNavScaffoldState();
@@ -263,14 +269,24 @@ class _FloatingNavBar extends StatelessWidget {
     final colors = _NavColors(context, style);
     final iconSize = style.iconSize ?? 24;
     final margin = style.barMargin ?? const EdgeInsets.fromLTRB(12, 0, 12, 12);
+    final inset = MediaQuery.paddingOf(context).bottom;
+    // A flat bar (no bottom margin) fills the home indicator's area and keeps
+    // its tabs above it. A floating bar overlaps the empty part of that area,
+    // so it doesn't leave a strip of blank screen under it.
+    final flat = margin.bottom == 0;
+    final gapBelow = flat
+        ? 0.0
+        : math.max(
+            margin.bottom, inset - AdaptiveNavScaffold.homeIndicatorHeight);
     return SafeArea(
       top: false,
-      minimum: EdgeInsets.only(bottom: margin.bottom),
+      bottom: false,
       child: Padding(
-        padding: EdgeInsets.only(
-          left: margin.left,
-          top: margin.top,
-          right: margin.right,
+        padding: EdgeInsets.fromLTRB(
+          margin.left,
+          margin.top,
+          margin.right,
+          gapBelow,
         ),
         child: Material(
           color: style.backgroundColor ?? scheme.surfaceContainer,
@@ -278,50 +294,54 @@ class _FloatingNavBar extends StatelessWidget {
           shadowColor: style.shadowColor ?? scheme.shadow,
           borderRadius: style.barBorderRadius ?? BorderRadius.circular(32),
           clipBehavior: Clip.antiAlias,
-          // The bar floats above the safe area; don't pad it a second time.
-          child: MediaQuery.removePadding(
-            context: context,
-            removeBottom: true,
-            child: NavigationBarTheme(
-              data: NavigationBarTheme.of(context).copyWith(
-                iconTheme: WidgetStateProperty.resolveWith(
-                  (states) => IconThemeData(
-                    size: iconSize,
-                    color: colors.resolve(states),
-                  ),
-                ),
-                labelTextStyle: WidgetStateProperty.resolveWith(
-                  (states) => colors.label(
-                    selected: states.contains(WidgetState.selected),
-                    disabled: states.contains(WidgetState.disabled),
-                  ),
-                ),
-              ),
-              child: NavigationBar(
-                height: style.barHeight ?? 68,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                indicatorColor: style.indicatorColor,
-                indicatorShape: style.indicatorShape,
-                animationDuration: style.animationDuration,
-                labelBehavior: switch (style.labelBehavior) {
-                  NavLabelBehavior.onlySelected =>
-                    NavigationDestinationLabelBehavior.onlyShowSelected,
-                  NavLabelBehavior.alwaysHide =>
-                    NavigationDestinationLabelBehavior.alwaysHide,
-                  _ => NavigationDestinationLabelBehavior.alwaysShow,
-                },
-                selectedIndex: currentIndex,
-                onDestinationSelected: onSelect,
-                destinations: [
-                  for (final d in destinations)
-                    NavigationDestination(
-                      icon: d.buildIcon(selected: false, size: iconSize),
-                      selectedIcon: d.buildIcon(selected: true, size: iconSize),
-                      label: d.label,
-                      enabled: d.enabled,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: flat ? inset : 0),
+            // The padding above handles the safe area; don't pad it twice.
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              child: NavigationBarTheme(
+                data: NavigationBarTheme.of(context).copyWith(
+                  iconTheme: WidgetStateProperty.resolveWith(
+                    (states) => IconThemeData(
+                      size: iconSize,
+                      color: colors.resolve(states),
                     ),
-                ],
+                  ),
+                  labelTextStyle: WidgetStateProperty.resolveWith(
+                    (states) => colors.label(
+                      selected: states.contains(WidgetState.selected),
+                      disabled: states.contains(WidgetState.disabled),
+                    ),
+                  ),
+                ),
+                child: NavigationBar(
+                  height: style.barHeight ?? 68,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  indicatorColor: style.indicatorColor,
+                  indicatorShape: style.indicatorShape,
+                  animationDuration: style.animationDuration,
+                  labelBehavior: switch (style.labelBehavior) {
+                    NavLabelBehavior.onlySelected =>
+                      NavigationDestinationLabelBehavior.onlyShowSelected,
+                    NavLabelBehavior.alwaysHide =>
+                      NavigationDestinationLabelBehavior.alwaysHide,
+                    _ => NavigationDestinationLabelBehavior.alwaysShow,
+                  },
+                  selectedIndex: currentIndex,
+                  onDestinationSelected: onSelect,
+                  destinations: [
+                    for (final d in destinations)
+                      NavigationDestination(
+                        icon: d.buildIcon(selected: false, size: iconSize),
+                        selectedIcon:
+                            d.buildIcon(selected: true, size: iconSize),
+                        label: d.label,
+                        enabled: d.enabled,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -402,7 +422,8 @@ class SideRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final railAlignment = style.railAlignment ??
-        switch (alignment ?? FoldMediaQuery.configOf(context).coverRailAlignment) {
+        switch (
+            alignment ?? FoldMediaQuery.configOf(context).coverRailAlignment) {
           CoverRailAlignment.top => MainAxisAlignment.start,
           CoverRailAlignment.center => MainAxisAlignment.center,
           CoverRailAlignment.bottom => MainAxisAlignment.end,
@@ -413,7 +434,8 @@ class SideRail extends StatelessWidget {
         child: Column(
           mainAxisAlignment: railAlignment,
           children: [
-            if (railAlignment != MainAxisAlignment.end) const SizedBox(height: 8),
+            if (railAlignment != MainAxisAlignment.end)
+              const SizedBox(height: 8),
             for (var i = 0; i < destinations.length; i++)
               _RailItem(
                 destination: destinations[i],

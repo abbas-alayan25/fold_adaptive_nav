@@ -6,6 +6,10 @@ import 'helpers.dart';
 
 const _phone = Size(393, 852);
 const _cover = Size(466, 678);
+const _flat = AdaptiveNavStyle(
+  barMargin: EdgeInsets.zero,
+  barBorderRadius: BorderRadius.zero,
+);
 
 Widget _tabs({
   AdaptiveNavStyle? style,
@@ -258,6 +262,32 @@ void main() {
     expect(rail.indicatorColor, const Color(0xFF0000FF));
     expect(rail.labelType, NavigationRailLabelType.selected);
   });
+
+  // (style, home indicator inset, expected blank screen under the bar)
+  for (final (name, style, inset, gap) in [
+    ('floating', null, 0.0, 12.0),
+    ('floating', null, 34.0, 21.0),
+    ('floating', null, 48.0, 35.0),
+    ('flat', _flat, 0.0, 0.0),
+    ('flat', _flat, 34.0, 0.0),
+  ]) {
+    testWidgets('$name bar with a ${inset}pt inset leaves ${gap}pt below',
+        (tester) async {
+      setWindowSize(tester, _phone);
+      tester.view.padding = FakeViewPadding(bottom: inset * 3);
+      tester.view.viewPadding = FakeViewPadding(bottom: inset * 3);
+      await pumpScoped(tester, _tabs(style: style));
+      final barMaterial = tester.getRect(find
+          .ancestor(of: find.byType(NavigationBar), matching: find.byType(Material))
+          .first);
+      expect(_phone.height - barMaterial.bottom, gap);
+      // The tabs themselves always stay clear of the home indicator.
+      final tabs = tester.getRect(find.byType(NavigationBar));
+      expect(tabs.bottom,
+          lessThanOrEqualTo(_phone.height - inset + AdaptiveNavScaffold.homeIndicatorHeight));
+      if (style == _flat) expect(tabs.bottom, _phone.height - inset);
+    });
+  }
 
   test('merge, copyWith, lerp and equality', () {
     const a = AdaptiveNavStyle(barHeight: 60, railWidth: 80);

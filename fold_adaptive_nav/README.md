@@ -212,12 +212,17 @@ AdaptiveNavScaffold(
 | `iconSize` | 24 (also the box for custom icons) |
 | `labelBehavior` | `NavLabelBehavior.alwaysShow` |
 | `elevation`, `shadowColor` | 3, `shadow` (bottom bar) |
-| `barHeight`, `barBorderRadius`, `barMargin` | 68, 32, 12 at sides and bottom |
+| `barHeight`, `barBorderRadius`, `barMargin` | 68, 32, 12 at sides and bottom (see below) |
 | `railWidth` | 88 (cover rail) |
 | `railAlignment` | follows `coverRailAlignment`; set it for other alignments such as `spaceEvenly` |
 | `animationDuration` | 200 ms on the cover rail |
 
 `AdaptiveNavScaffold.backgroundColor` sets the scaffold behind the body.
+
+On phones with a home indicator, a floating bar overlaps the empty part of
+that area: on an iPhone it sits 21 pt from the bottom, not 34 pt. A flat bar
+(`barMargin` with a bottom of 0) fills the area down to the screen edge and
+keeps its tabs above the indicator.
 
 ## Flows
 

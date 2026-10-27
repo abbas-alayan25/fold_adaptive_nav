@@ -1,3 +1,9 @@
+## 1.2.1
+
+* Fix the blank strip under the bottom bar on phones with a home indicator.
+  A flat bar now fills that area to the screen edge; a floating bar overlaps
+  its empty part (21 pt from the bottom on an iPhone instead of 34 pt).
+
 ## 1.2.0
 
 * Add `FoldAdaptiveConfig.coverRailAlignment` (`top`, `center`, `bottom`):
