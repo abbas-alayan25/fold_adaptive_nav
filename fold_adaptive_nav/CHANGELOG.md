@@ -1,3 +1,20 @@
+## 1.4.0
+
+* Add `AdaptiveListDetail`: a list and its open item, side by side at the
+  fold or on wide tablets, one at a time on phones, where back closes the
+  item.
+* `AdaptiveNavScaffold` shows at most `maxBarDestinations` (5) tabs on the
+  bottom bar and the cover rail; the rest go behind a "More" tab
+  (`moreLabel`, `moreIcon`).
+* Add `FoldAdaptiveConfig.drawerFromWidth`: a permanent `NavigationDrawer`
+  on wide tablets.
+* Add `AdaptiveNavScaffold.hideBarOnScroll`.
+* Cover rail labels wrap onto two lines and the rail scrolls when its tabs
+  don't fit, instead of overflowing with large text. Rail tabs keep a 48 pt
+  touch target. Reduced motion turns off the rail, bar and hide animations.
+* `FoldDevicePreset.galaxyZFlipCover` is now 411 × 427 pt, the Galaxy Z
+  Flip5's cover at its usual density.
+
 ## 1.3.0
 
 * Opened flip phones (Galaxy Z Flip, Razr) follow `lockPhonesToPortrait` like

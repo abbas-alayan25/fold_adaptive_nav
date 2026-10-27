@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 
+import 'adaptive_sheet.dart';
 import 'config.dart';
 import 'fold_media_query.dart';
 import 'form_factor.dart';
@@ -81,6 +83,10 @@ class NavDestination {
 /// | phone | [body] + floating bottom bar; [trailingAction] above it |
 /// | cover | [body] + a rail on the physical right, action at its foot |
 /// | tablet | a bottom bar capped in width, or a [NavigationRail] |
+/// | tablet from `FoldAdaptiveConfig.drawerFromWidth` | a [NavigationDrawer] |
+///
+/// More than [maxBarDestinations] tabs don't fit a bar or the cover rail:
+/// the last of its places becomes a "More" tab that lists the rest.
 class AdaptiveNavScaffold extends StatefulWidget {
   const AdaptiveNavScaffold({
     super.key,
@@ -92,7 +98,12 @@ class AdaptiveNavScaffold extends StatefulWidget {
     this.appBar,
     this.style,
     this.backgroundColor,
-  }) : assert(destinations.length >= 2);
+    this.maxBarDestinations = 5,
+    this.moreLabel = 'More',
+    this.moreIcon = Icons.more_horiz,
+    this.hideBarOnScroll = false,
+  })  : assert(destinations.length >= 2),
+        assert(maxBarDestinations >= 2);
 
   final List<NavDestination> destinations;
   final int currentIndex;
@@ -110,6 +121,20 @@ class AdaptiveNavScaffold extends StatefulWidget {
 
   /// Background of the [Scaffold] in every layout.
   final Color? backgroundColor;
+
+  /// The most tabs the bottom bar and the cover rail show. With more, the
+  /// first `maxBarDestinations - 1` show and a [moreLabel] tab opens a list
+  /// of the rest. The tablet rail and drawer show every tab.
+  final int maxBarDestinations;
+
+  /// Label of the "More" tab; pass a translation.
+  final String moreLabel;
+  final IconData moreIcon;
+
+  /// Slide the bottom bar away while the body scrolls down, and back while
+  /// it scrolls up or at the top. Only the body's outermost vertical
+  /// scrollable counts.
+  final bool hideBarOnScroll;
 
   /// Default width of the cover display's rail.
   static const double railWidth = 88;
@@ -136,15 +161,106 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
   ValueChanged<int> get onSelect => widget.onSelect;
   Widget? get trailingAction => widget.trailingAction;
   PreferredSizeWidget? get appBar => widget.appBar;
-  Widget get body => KeyedSubtree(key: _bodyKey, child: widget.body);
+  Widget get body => NotificationListener<UserScrollNotification>(
+        onNotification: _onUserScroll,
+        child: KeyedSubtree(key: _bodyKey, child: widget.body),
+      );
+
+  bool _barVisible = true;
+
+  @override
+  void didUpdateWidget(AdaptiveNavScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A new tab starts with the bar in view.
+    if (oldWidget.currentIndex != currentIndex || !widget.hideBarOnScroll) {
+      _barVisible = true;
+    }
+  }
+
+  bool _onUserScroll(UserScrollNotification notification) {
+    if (!widget.hideBarOnScroll ||
+        notification.depth != 0 ||
+        notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    // The direction is reported before the position moves, so "at the top"
+    // only counts once scrolling stops.
+    final metrics = notification.metrics;
+    final visible = switch (notification.direction) {
+      ScrollDirection.reverse => false,
+      ScrollDirection.forward => true,
+      ScrollDirection.idle =>
+        metrics.pixels <= metrics.minScrollExtent || _barVisible,
+    };
+    if (visible != _barVisible) setState(() => _barVisible = visible);
+    return false;
+  }
+
+  /// The tabs the bottom bar and the cover rail show: all of them, or the
+  /// first ones and "More".
+  bool get _overflows => destinations.length > widget.maxBarDestinations;
+  int get _shownCount =>
+      _overflows ? widget.maxBarDestinations - 1 : destinations.length;
+
+  List<NavDestination> get _barDestinations {
+    if (!_overflows) return destinations;
+    final hidden = destinations.skip(_shownCount);
+    return [
+      ...destinations.take(_shownCount),
+      NavDestination(
+        icon: widget.moreIcon,
+        label: widget.moreLabel,
+        // A dot when a tab behind it has a badge.
+        badge: hidden.any((d) => d.badge != null) ? '' : null,
+      ),
+    ];
+  }
+
+  int get _barIndex => math.min(currentIndex, _shownCount);
+
+  void _onBarSelect(int index) {
+    if (_overflows && index == _shownCount) {
+      _showMore();
+    } else {
+      onSelect(index);
+    }
+  }
+
+  void _showMore() {
+    showAdaptiveSheet<void>(
+      context: context,
+      builder: (sheetContext) => ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: 16),
+        children: [
+          for (var i = _shownCount; i < destinations.length; i++)
+            ListTile(
+              leading: destinations[i].buildIcon(selected: i == currentIndex),
+              title: Text(destinations[i].label),
+              selected: i == currentIndex,
+              enabled: destinations[i].enabled,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                onSelect(i);
+              },
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final config = FoldMediaQuery.configOf(context);
     final style = AdaptiveNavStyle.of(context).merge(widget.style);
+    final drawerFrom = config.drawerFromWidth;
     return switch (context.formFactor) {
       FormFactor.phone => _bottomBarScaffold(context, style, maxBarWidth: null),
       FormFactor.cover => _coverScaffold(context, style, config),
+      FormFactor.tablet
+          when drawerFrom != null &&
+              MediaQuery.sizeOf(context).width >= drawerFrom =>
+        _drawerScaffold(context, style),
       FormFactor.tablet => config.tabletNavigation == TabletNavigation.rail
           ? _railScaffold(context, style)
           : _bottomBarScaffold(
@@ -161,10 +277,17 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     double? maxBarWidth,
   }) {
     Widget bar = _FloatingNavBar(
-      destinations: destinations,
-      currentIndex: currentIndex,
-      onSelect: onSelect,
+      destinations: _barDestinations,
+      currentIndex: _barIndex,
+      onSelect: _onBarSelect,
       style: style,
+    );
+    // Slid by its own height, the bar and the gap below it leave the screen.
+    bar = AnimatedSlide(
+      offset: _barVisible ? Offset.zero : const Offset(0, 1),
+      duration: _motion(context, const Duration(milliseconds: 200)),
+      curve: Curves.easeOutCubic,
+      child: bar,
     );
     if (maxBarWidth != null) {
       bar = Align(
@@ -209,12 +332,69 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
             : style.railWidth ?? AdaptiveNavScaffold.railWidth,
         content: body,
         side: SideRail(
-          destinations: destinations,
-          currentIndex: currentIndex,
-          onSelect: onSelect,
+          destinations: _barDestinations,
+          currentIndex: _barIndex,
+          onSelect: _onBarSelect,
           trailingAction: trailingAction,
           style: railStyle,
         ),
+      ),
+    );
+  }
+
+  Widget _drawerScaffold(BuildContext context, AdaptiveNavStyle style) {
+    final colors = _NavColors(context, style);
+    final iconSize = style.iconSize ?? 24;
+    return Scaffold(
+      appBar: appBar,
+      backgroundColor: widget.backgroundColor,
+      body: Row(
+        children: [
+          NavigationDrawerTheme(
+            data: NavigationDrawerTheme.of(context).copyWith(
+              iconTheme: WidgetStateProperty.resolveWith(
+                (states) => IconThemeData(
+                  size: iconSize,
+                  color: colors.resolve(states),
+                ),
+              ),
+              labelTextStyle: WidgetStateProperty.resolveWith(
+                (states) => colors.label(
+                  selected: states.contains(WidgetState.selected),
+                  disabled: states.contains(WidgetState.disabled),
+                ),
+              ),
+            ),
+            child: NavigationDrawer(
+              selectedIndex: currentIndex,
+              onDestinationSelected: onSelect,
+              backgroundColor: style.backgroundColor,
+              indicatorColor: style.indicatorColor,
+              indicatorShape: style.indicatorShape,
+              elevation: 0,
+              children: [
+                const SizedBox(height: 12),
+                if (trailingAction != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: trailingAction,
+                    ),
+                  ),
+                for (final d in destinations)
+                  NavigationDrawerDestination(
+                    icon: d.buildIcon(selected: false, size: iconSize),
+                    selectedIcon: d.buildIcon(selected: true, size: iconSize),
+                    label: Text(d.label),
+                    enabled: d.enabled,
+                  ),
+              ],
+            ),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(child: body),
+        ],
       ),
     );
   }
@@ -334,7 +514,9 @@ class _FloatingNavBar extends StatelessWidget {
                   elevation: 0,
                   indicatorColor: style.indicatorColor,
                   indicatorShape: style.indicatorShape,
-                  animationDuration: style.animationDuration,
+                  animationDuration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : style.animationDuration,
                   labelBehavior: switch (style.labelBehavior) {
                     NavLabelBehavior.onlySelected =>
                       NavigationDestinationLabelBehavior.onlyShowSelected,
@@ -444,26 +626,42 @@ class SideRail extends StatelessWidget {
     return Material(
       color: style.backgroundColor ?? scheme.surfaceContainer,
       child: SafeArea(
-        child: Column(
-          mainAxisAlignment: railAlignment,
-          children: [
-            if (railAlignment != MainAxisAlignment.end)
-              const SizedBox(height: 8),
-            for (var i = 0; i < destinations.length; i++)
-              _RailItem(
-                destination: destinations[i],
-                selected: i == currentIndex,
-                onTap: () => onSelect(i),
-                style: style,
+        // Scrolls when large text or many tabs don't fit; otherwise the
+        // column fills the rail and the alignment applies.
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                // Unbounded when a SideRail is used on its own in a column.
+                minHeight:
+                    constraints.hasBoundedHeight ? constraints.maxHeight : 0,
               ),
-            if (trailingAction != null) ...[
-              const SizedBox(height: 16),
-              trailingAction!,
-            ],
-            const SizedBox(height: 16),
-          ],
+              child: _column(railAlignment),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _column(MainAxisAlignment railAlignment) {
+    return Column(
+      mainAxisAlignment: railAlignment,
+      children: [
+        if (railAlignment != MainAxisAlignment.end) const SizedBox(height: 8),
+        for (var i = 0; i < destinations.length; i++)
+          _RailItem(
+            destination: destinations[i],
+            selected: i == currentIndex,
+            onTap: () => onSelect(i),
+            style: style,
+          ),
+        if (trailingAction != null) ...[
+          const SizedBox(height: 16),
+          trailingAction!,
+        ],
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
@@ -500,48 +698,62 @@ class _RailItem extends StatelessWidget {
       excludeSemantics: true,
       child: InkWell(
         onTap: enabled ? onTap : null,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: style.animationDuration ??
-                    const Duration(milliseconds: 200),
-                width: 56,
-                height: iconSize + 8,
-                decoration: ShapeDecoration(
-                  color: selected
-                      ? style.indicatorColor ?? scheme.secondaryContainer
-                      : Colors.transparent,
-                  shape: style.indicatorShape ?? const StadiumBorder(),
-                ),
-                alignment: Alignment.center,
-                child: destination.buildIcon(
-                  selected: selected,
-                  color: enabled
-                      ? (selected ? colors.selected : colors.unselected)
-                      : colors.disabled,
-                  size: iconSize,
-                ),
-              ),
-              if (showLabel) ...[
-                const SizedBox(height: 4),
-                Text(
-                  destination.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: colors.label(
+        // At least the 48 pt touch target, whatever the icon size.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: _motion(
+                    context,
+                    style.animationDuration ??
+                        const Duration(milliseconds: 200),
+                  ),
+                  width: 56,
+                  height: iconSize + 8,
+                  decoration: ShapeDecoration(
+                    color: selected
+                        ? style.indicatorColor ?? scheme.secondaryContainer
+                        : Colors.transparent,
+                    shape: style.indicatorShape ?? const StadiumBorder(),
+                  ),
+                  alignment: Alignment.center,
+                  child: destination.buildIcon(
                     selected: selected,
-                    disabled: !enabled,
-                    boldSelected: true,
+                    color: enabled
+                        ? (selected ? colors.selected : colors.unselected)
+                        : colors.disabled,
+                    size: iconSize,
                   ),
                 ),
+                if (showLabel) ...[
+                  const SizedBox(height: 4),
+                  // Large text wraps onto a second line; the rail scrolls
+                  // if the tabs no longer fit.
+                  Text(
+                    destination.label,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: colors.label(
+                      selected: selected,
+                      disabled: !enabled,
+                      boldSelected: true,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
+/// [duration], or none when the platform asks for reduced motion.
+Duration _motion(BuildContext context, Duration duration) =>
+    MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;

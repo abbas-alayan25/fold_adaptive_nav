@@ -156,8 +156,10 @@ where the thumb rests.
 
 Covers narrower than `compactCoverRailBelow` (400 pt) get a compact rail:
 64 pt wide (`AdaptiveNavStyle.compactRailWidth`) with no labels, which screen
-readers still read out. That covers the Galaxy Z Fold and Z Flip outer
-displays; the Pixel Fold (412 pt) and iPhone Duo (466 pt) keep the full rail.
+readers still read out. That covers the Galaxy Z Fold outer display
+(about 344–373 pt); the Pixel Fold (412 pt) and iPhone Duo (466 pt) keep the
+full rail. A Galaxy Z Flip5 cover is about 411 × 427 pt, but some Android 14
+builds report it at about 240 × 249 pt, which gets the compact rail.
 
 To give narrow covers the phone layout instead, with a bottom bar:
 
@@ -209,6 +211,47 @@ colors.
 NavDestination(icon: Icons.mail_outline, label: 'Inbox', badge: '3'), // '' = a dot
 NavDestination(icon: Icons.lock_outline, label: 'Pro', enabled: false),
 ```
+
+### More than five tabs
+
+The bottom bar and the cover rail show at most `maxBarDestinations` (5)
+tabs. With more, the first four show and a "More" tab opens a list of the
+rest: a sheet on phones and the cover, a dialog on tablets. More is selected
+while one of those tabs is, and shows a dot when one has a badge. The tablet
+rail and drawer show every tab.
+
+```dart
+AdaptiveNavScaffold(
+  destinations: sevenTabs,
+  moreLabel: l10n.more, // 'More' by default
+  ...
+)
+```
+
+### Drawer on wide screens
+
+```dart
+const FoldAdaptiveConfig(drawerFromWidth: 1200)
+```
+
+From that window width, tablets get a permanent `NavigationDrawer` with the
+labels beside the icons, and `trailingAction` at its head. Off by default.
+
+### Hiding the bar while scrolling
+
+`AdaptiveNavScaffold(hideBarOnScroll: true, ...)` slides the bottom bar away
+while the body scrolls down, and back while it scrolls up, at the top, or on
+a new tab. Only the body's outermost vertical scrollable counts.
+
+### Accessibility
+
+- Rail labels wrap onto a second line with large text, and the cover rail
+  scrolls when its tabs no longer fit.
+- Rail tabs keep a 48 × 48 pt touch target whatever `iconSize` is.
+- With reduced motion on (`MediaQuery.disableAnimations`), the rail
+  indicator, the bar's selection and hiding the bar don't animate.
+- Hidden labels (compact rail, `NavLabelBehavior.alwaysHide`) are still read
+  out by screen readers.
 
 ### Styling
 
@@ -325,22 +368,26 @@ FoldSplitView(
 when half open with the fold across. A flat flip phone is one screen and
 never splits. Both panes keep their state while the layout changes.
 
-For a list and detail, show the detail on its own on phones while an item
-is open:
+### List and detail
 
 ```dart
-FoldSplitView(
-  start: MessageList(onOpen: (id) => setState(() => openId = id)),
-  end: openId == null ? const EmptyDetail() : MessageDetail(id: openId!),
-  singleBuilder: (context, list, detail) => openId == null
-      ? list
-      : PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) => setState(() => openId = null),
-          child: detail,
-        ),
+AdaptiveListDetail(
+  list: MessageList(onOpen: (id) => setState(() => openId = id)),
+  detail: openId == null ? null : MessageDetail(id: openId!),
+  emptyDetail: const Center(child: Text('Pick a message')),
+  onCloseDetail: () => setState(() => openId = null),
 )
 ```
+
+| Device | Shows |
+|---|---|
+| Opened foldable, wide tablet | list \| detail (or `emptyDetail`) |
+| Phone, cover display | the list, or the detail while one is open |
+
+On phones, back closes the detail instead of leaving the page, and the list
+keeps its scroll position underneath. An item opened on the cover stays open
+after unfolding, now beside the list. In a wide window without a fold the
+list takes `listFraction` (0.4) of the width.
 
 ### Tabletop
 

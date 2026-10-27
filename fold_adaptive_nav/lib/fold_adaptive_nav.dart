@@ -27,6 +27,7 @@ export 'src/fold_media_query.dart';
 export 'src/fold_safe_area.dart';
 export 'src/fold_scope.dart';
 export 'src/form_factor.dart';
+export 'src/list_detail.dart';
 export 'src/nav_style.dart';
 export 'src/orientation_policy.dart';
 export 'src/pinned_action_body.dart';

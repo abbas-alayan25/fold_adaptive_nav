@@ -46,7 +46,7 @@ void main() {
       FormFactor of(FoldDevicePreset p) =>
           resolveFormFactor(window: p.size, fold: p.state, config: config);
       expect(of(FoldDevicePreset.galaxyZFoldCover), FormFactor.phone);
-      expect(of(FoldDevicePreset.galaxyZFlipCover), FormFactor.phone);
+      expect(of(FoldDevicePreset.galaxyZFlipCover), FormFactor.cover);
       expect(of(FoldDevicePreset.pixelFoldCover), FormFactor.cover);
       expect(of(FoldDevicePreset.iPhoneDuoCover), FormFactor.cover);
     });

@@ -77,6 +77,7 @@ class FoldAdaptiveConfig {
     this.compactCoverRailBelow = 400,
     this.treatOpenedFlipsAsPhones = true,
     this.formFactorResolver,
+    this.drawerFromWidth,
   });
 
   final RailSide coverRailSide;
@@ -127,6 +128,11 @@ class FoldAdaptiveConfig {
   /// so the config stays `const` and compares equal across rebuilds.
   final FormFactorResolver? formFactorResolver;
 
+  /// From this window width, tablets get a permanent [NavigationDrawer]
+  /// with labels beside the icons, instead of [tabletNavigation]. Null, the
+  /// default, never shows one; Material suggests 1200.
+  final double? drawerFromWidth;
+
   @override
   bool operator ==(Object other) =>
       other is FoldAdaptiveConfig &&
@@ -142,7 +148,8 @@ class FoldAdaptiveConfig {
       other.coverMinShortestSide == coverMinShortestSide &&
       other.compactCoverRailBelow == compactCoverRailBelow &&
       other.treatOpenedFlipsAsPhones == treatOpenedFlipsAsPhones &&
-      other.formFactorResolver == formFactorResolver;
+      other.formFactorResolver == formFactorResolver &&
+      other.drawerFromWidth == drawerFromWidth;
 
   @override
   int get hashCode => Object.hash(
@@ -159,5 +166,6 @@ class FoldAdaptiveConfig {
         compactCoverRailBelow,
         treatOpenedFlipsAsPhones,
         formFactorResolver,
+        drawerFromWidth,
       );
 }

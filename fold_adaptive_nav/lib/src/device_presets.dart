@@ -178,10 +178,12 @@ class FoldDevicePreset {
     ),
   );
 
-  /// An app on the small outer display of a closed Galaxy Z Flip.
+  /// An app on the outer display of a closed Galaxy Z Flip5 (720 × 748 px at
+  /// a density of 1.75). Some Android 14 builds report a density of 3 for
+  /// that display, which makes it about 240 × 249 pt.
   static const galaxyZFlipCover = FoldDevicePreset(
     name: 'Galaxy Z Flip, closed',
-    size: Size(360, 374),
+    size: Size(411, 427),
     padding: EdgeInsets.only(top: 24),
     state: _closedAndroid,
   );
