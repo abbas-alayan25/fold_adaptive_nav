@@ -19,8 +19,11 @@ Widget _scaffold() => MaterialApp(
       ),
     );
 
-FormFactor _narrowCoverIsPhone(Size window, FoldState fold, FormFactor suggested) =>
-    suggested == FormFactor.cover && window.width < 400 ? FormFactor.phone : suggested;
+FormFactor _narrowCoverIsPhone(
+        Size window, FoldState fold, FormFactor suggested) =>
+    suggested == FormFactor.cover && window.width < 400
+        ? FormFactor.phone
+        : suggested;
 
 class _Counter extends StatefulWidget {
   const _Counter();
@@ -56,23 +59,27 @@ void main() {
         FoldDevicePreset.galaxyZFoldCover,
         FoldDevicePreset.galaxyZFlipCover,
       ]) {
-        expect(resolveFormFactor(window: p.size, fold: p.state), FormFactor.cover);
+        expect(
+            resolveFormFactor(window: p.size, fold: p.state), FormFactor.cover);
       }
     });
 
     test('formFactorResolver has the last word', () {
-      const config = FoldAdaptiveConfig(formFactorResolver: _narrowCoverIsPhone);
+      const config =
+          FoldAdaptiveConfig(formFactorResolver: _narrowCoverIsPhone);
       const zFold = FoldDevicePreset.galaxyZFoldCover;
       const duo = FoldDevicePreset.iPhoneDuoCover;
       expect(
-        resolveFormFactor(window: zFold.size, fold: zFold.state, config: config),
+        resolveFormFactor(
+            window: zFold.size, fold: zFold.state, config: config),
         FormFactor.phone,
       );
       expect(
         resolveFormFactor(window: duo.size, fold: duo.state, config: config),
         FormFactor.cover,
       );
-      expect(config, const FoldAdaptiveConfig(formFactorResolver: _narrowCoverIsPhone));
+      expect(config,
+          const FoldAdaptiveConfig(formFactorResolver: _narrowCoverIsPhone));
     });
 
     test('every preset gets the layout of its device', () {
@@ -92,7 +99,8 @@ void main() {
       };
       expect(FoldDevicePreset.all.map((p) => p.name), expected.keys);
       for (final p in FoldDevicePreset.all) {
-        expect(resolveFormFactor(window: p.size, fold: p.state), expected[p.name],
+        expect(
+            resolveFormFactor(window: p.size, fold: p.state), expected[p.name],
             reason: p.name);
       }
     });
@@ -106,7 +114,8 @@ void main() {
       expect(orientationsFor(flip.state, FormFactor.phone, config),
           [DeviceOrientation.portraitUp]);
       expect(
-        orientationsFor(FoldDevicePreset.galaxyZFlipFlex.state, FormFactor.phone, config),
+        orientationsFor(
+            FoldDevicePreset.galaxyZFlipFlex.state, FormFactor.phone, config),
         [DeviceOrientation.portraitUp],
       );
     });
@@ -129,12 +138,14 @@ void main() {
 
     test('opened book foldables still turn freely', () {
       expect(
-        orientationsFor(FoldDevicePreset.pixelFoldOpen.state, FormFactor.tablet, config),
+        orientationsFor(
+            FoldDevicePreset.pixelFoldOpen.state, FormFactor.tablet, config),
         DeviceOrientation.values,
       );
     });
 
-    testWidgets('FoldScope locks an opened flip phone to portrait', (tester) async {
+    testWidgets('FoldScope locks an opened flip phone to portrait',
+        (tester) async {
       final calls = captureOrientations(tester);
       setWindowSize(tester, flip.size);
       await pumpScoped(tester, const SizedBox(), state: flip.state);
@@ -148,7 +159,8 @@ void main() {
     double railWidth(WidgetTester tester) =>
         tester.getSize(find.byType(SideRail)).width;
 
-    testWidgets('narrow covers get a 64 pt rail without labels', (tester) async {
+    testWidgets('narrow covers get a 64 pt rail without labels',
+        (tester) async {
       await tester.pumpWidget(FoldPreview(
         preset: FoldDevicePreset.galaxyZFoldCover,
         child: _scaffold(),
@@ -210,14 +222,18 @@ void main() {
     test('half open with the fold across splits top and bottom', () {
       const expected = FoldSplit(axis: Axis.vertical, start: 503, end: 503);
       expect(split(FoldDevicePreset.galaxyZFlipFlex), expected);
-      expect(split(FoldDevicePreset.galaxyZFlipFlex, mode: FoldSplitMode.tabletop),
+      expect(
+          split(FoldDevicePreset.galaxyZFlipFlex, mode: FoldSplitMode.tabletop),
           expected);
-      expect(split(FoldDevicePreset.pixelFoldTabletop, mode: FoldSplitMode.tabletop),
+      expect(
+          split(FoldDevicePreset.pixelFoldTabletop,
+              mode: FoldSplitMode.tabletop),
           const FoldSplit(axis: Axis.vertical, start: 420.5, end: 420.5));
     });
 
     test('tabletop mode ignores folds running down', () {
-      expect(split(FoldDevicePreset.pixelFoldOpen, mode: FoldSplitMode.tabletop),
+      expect(
+          split(FoldDevicePreset.pixelFoldOpen, mode: FoldSplitMode.tabletop),
           isNull);
     });
 
@@ -257,7 +273,8 @@ void main() {
   });
 
   group('FoldSplitView', () {
-    Widget app(FoldDevicePreset preset, {TextDirection? direction}) => FoldPreview(
+    Widget app(FoldDevicePreset preset, {TextDirection? direction}) =>
+        FoldPreview(
           preset: preset,
           child: MaterialApp(
             builder: (context, child) => direction == null
@@ -271,10 +288,10 @@ void main() {
             ),
           ),
         );
-    final start = find.byWidgetPredicate(
-        (w) => w is ColoredBox && w.color == Colors.red);
-    final end = find.byWidgetPredicate(
-        (w) => w is ColoredBox && w.color == Colors.blue);
+    final start =
+        find.byWidgetPredicate((w) => w is ColoredBox && w.color == Colors.red);
+    final end = find
+        .byWidgetPredicate((w) => w is ColoredBox && w.color == Colors.blue);
 
     testWidgets('panes meet at the fold of an opened foldable', (tester) async {
       await tester.pumpWidget(app(FoldDevicePreset.pixelFoldOpen));
@@ -284,7 +301,8 @@ void main() {
       expect(tester.getTopLeft(start).dx, lessThan(tester.getTopLeft(end).dx));
     });
 
-    testWidgets('a view that is not at the screen edge still splits at the fold',
+    testWidgets(
+        'a view that is not at the screen edge still splits at the fold',
         (tester) async {
       await tester.pumpWidget(const FoldPreview(
         preset: FoldDevicePreset.pixelFoldOpen,
@@ -314,7 +332,8 @@ void main() {
       await tester.pumpWidget(
           app(FoldDevicePreset.pixelFoldOpen, direction: TextDirection.rtl));
       await tester.pumpAndSettle();
-      expect(tester.getTopLeft(start).dx, greaterThan(tester.getTopLeft(end).dx));
+      expect(
+          tester.getTopLeft(start).dx, greaterThan(tester.getTopLeft(end).dx));
     });
 
     testWidgets('one pane on a phone, and start keeps its state on unfolding',
@@ -330,7 +349,8 @@ void main() {
       expect(find.text('count 1'), findsOneWidget);
     });
 
-    testWidgets('TabletopLayout splits at the fold in Flex mode', (tester) async {
+    testWidgets('TabletopLayout splits at the fold in Flex mode',
+        (tester) async {
       Widget tabletop(FoldDevicePreset preset) => FoldPreview(
             preset: preset,
             child: const Directionality(
@@ -513,7 +533,8 @@ void main() {
         ),
       ),
     ));
-    expect(find.text('cover · closed · 0° · 344×882 · compact'), findsOneWidget);
+    expect(
+        find.text('cover · closed · 0° · 344×882 · compact'), findsOneWidget);
     await tester.tapAt(tester.getCenter(find.byType(Scaffold)));
     expect(taps, 1);
   });

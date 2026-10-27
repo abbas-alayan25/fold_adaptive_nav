@@ -86,7 +86,8 @@ void main() {
     expect(bar.right, _phone.width);
     expect(bar.bottom, _phone.height);
     final material = tester.widget<Material>(find
-        .ancestor(of: find.byType(NavigationBar), matching: find.byType(Material))
+        .ancestor(
+            of: find.byType(NavigationBar), matching: find.byType(Material))
         .first);
     expect(material.color, const Color(0xFF654321));
   });
@@ -95,8 +96,7 @@ void main() {
     ('phone', _phone, FoldState.unsupported),
     ('cover', _cover, closedFoldable),
   ]) {
-    testWidgets('selected and unselected colors on the $name',
-        (tester) async {
+    testWidgets('selected and unselected colors on the $name', (tester) async {
       setWindowSize(tester, size);
       await pumpScoped(
         tester,
@@ -147,7 +147,8 @@ void main() {
         _tabs(
           destinations: const [
             NavDestination(icon: Icons.home_outlined, label: 'Home'),
-            NavDestination(icon: Icons.mail_outline, label: 'Inbox', badge: '3'),
+            NavDestination(
+                icon: Icons.mail_outline, label: 'Inbox', badge: '3'),
             NavDestination(
               icon: Icons.lock_outline,
               label: 'Locked',
@@ -214,17 +215,19 @@ void main() {
       if (side == RailSide.physicalLeft) {
         expect(home.right, lessThan(AdaptiveNavScaffold.railWidth + 1));
       } else {
-        expect(home.left, greaterThan(_cover.width - AdaptiveNavScaffold.railWidth - 1));
+        expect(home.left,
+            greaterThan(_cover.width - AdaptiveNavScaffold.railWidth - 1));
       }
     });
   }
 
-  testWidgets('the style railAlignment wins over the config',
-      (tester) async {
+  testWidgets('the style railAlignment wins over the config', (tester) async {
     setWindowSize(tester, _cover);
     await pumpScoped(
       tester,
-      _tabs(style: const AdaptiveNavStyle(railAlignment: MainAxisAlignment.start)),
+      _tabs(
+          style:
+              const AdaptiveNavStyle(railAlignment: MainAxisAlignment.start)),
       state: closedFoldable,
       config: const FoldAdaptiveConfig(
         coverRailAlignment: CoverRailAlignment.bottom,
@@ -239,7 +242,9 @@ void main() {
     setWindowSize(tester, _cover);
     await pumpScoped(
       tester,
-      _tabs(style: const AdaptiveNavStyle(railAlignment: MainAxisAlignment.start)),
+      _tabs(
+          style:
+              const AdaptiveNavStyle(railAlignment: MainAxisAlignment.start)),
       state: closedFoldable,
     );
     expect(tester.getRect(find.byIcon(Icons.home_outlined)).top,
@@ -278,13 +283,16 @@ void main() {
       tester.view.viewPadding = FakeViewPadding(bottom: inset * 3);
       await pumpScoped(tester, _tabs(style: style));
       final barMaterial = tester.getRect(find
-          .ancestor(of: find.byType(NavigationBar), matching: find.byType(Material))
+          .ancestor(
+              of: find.byType(NavigationBar), matching: find.byType(Material))
           .first);
       expect(_phone.height - barMaterial.bottom, gap);
       // The tabs themselves always stay clear of the home indicator.
       final tabs = tester.getRect(find.byType(NavigationBar));
-      expect(tabs.bottom,
-          lessThanOrEqualTo(_phone.height - inset + AdaptiveNavScaffold.homeIndicatorHeight));
+      expect(
+          tabs.bottom,
+          lessThanOrEqualTo(
+              _phone.height - inset + AdaptiveNavScaffold.homeIndicatorHeight));
       if (style == _flat) expect(tabs.bottom, _phone.height - inset);
     });
   }
@@ -296,6 +304,7 @@ void main() {
     expect(a.merge(null), a);
     expect(a.copyWith(railWidth: 90).railWidth, 90);
     expect(a.lerp(b, 0.5).barHeight, 80);
-    expect(a.hashCode, const AdaptiveNavStyle(barHeight: 60, railWidth: 80).hashCode);
+    expect(a.hashCode,
+        const AdaptiveNavStyle(barHeight: 60, railWidth: 80).hashCode);
   });
 }

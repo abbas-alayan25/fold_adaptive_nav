@@ -14,6 +14,11 @@
   touch target. Reduced motion turns off the rail, bar and hide animations.
 * `FoldDevicePreset.galaxyZFlipCover` is now 411 × 427 pt, the Galaxy Z
   Flip5's cover at its usual density.
+* Add `FoldSplitView.isSplitOf`, to show a back button only when a pane is
+  alone.
+* The example shows every feature: list and detail, tabletop, adaptive grid
+  and sheets, More, drawer, hide-on-scroll and the debug overlay, with a
+  test that runs it on every device preset.
 
 ## 1.3.0
 

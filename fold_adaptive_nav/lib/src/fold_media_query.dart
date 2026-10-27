@@ -5,7 +5,15 @@ import 'config.dart';
 import 'form_factor.dart';
 
 /// The parts of [FoldMediaQuery] a widget can depend on separately.
-enum FoldAspect { formFactor, posture, isFoldable, regions, sizeClass, state, config }
+enum FoldAspect {
+  formFactor,
+  posture,
+  isFoldable,
+  regions,
+  sizeClass,
+  state,
+  config
+}
 
 /// Publishes the fold state and form factor below a [FoldScope].
 ///

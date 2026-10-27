@@ -62,7 +62,8 @@ class DevicePage extends StatelessWidget {
                     leading: Icon(r.kind == RegionKind.fold
                         ? Icons.vertical_split
                         : Icons.camera_alt_outlined),
-                    title: Text('${r.kind.name}${r.isActive ? '' : ' (inactive)'}'),
+                    title: Text(
+                        '${r.kind.name}${r.isActive ? '' : ' (inactive)'}'),
                     subtitle: Text(
                       '${r.bounds.left.round()}, ${r.bounds.top.round()} · '
                       '${r.bounds.width.round()} × ${r.bounds.height.round()}',
@@ -85,10 +86,22 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Not `trailing`: a long value (or large text) would take the whole tile.
     return ListTile(
       dense: true,
-      title: Text(label),
-      trailing: Text(value, style: Theme.of(context).textTheme.titleSmall),
+      title: Row(
+        children: [
+          Expanded(child: Text(label)),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

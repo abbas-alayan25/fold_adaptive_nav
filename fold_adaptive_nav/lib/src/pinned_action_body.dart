@@ -53,7 +53,8 @@ class PinnedActionBody extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => switch (formFactor) {
         FormFactor.cover => _cover(context, config.coverRailSide),
-        FormFactor.tablet when constraints.maxWidth >= config.expandedBreakpoint =>
+        FormFactor.tablet
+            when constraints.maxWidth >= config.expandedBreakpoint =>
           _sidePanel(context),
         FormFactor.tablet => _pinned(context, maxContentWidth: maxContentWidth),
         FormFactor.phone => _pinned(context, maxContentWidth: null),
@@ -184,7 +185,10 @@ class PinnedActionBody extends StatelessWidget {
                       panelHeader!,
                     ],
                     const Spacer(),
-                    if (footer != null) ...[footer!, const SizedBox(height: 16)],
+                    if (footer != null) ...[
+                      footer!,
+                      const SizedBox(height: 16)
+                    ],
                     action,
                   ],
                 ),

@@ -9,15 +9,40 @@ void main() {
   const matrix = [
     ('iPhone SE', Size(375, 667), FormFactor.phone, FormFactor.cover),
     ('iPhone 16', Size(393, 852), FormFactor.phone, FormFactor.cover),
-    ('iPhone 16 on its side', Size(852, 393), FormFactor.phone, FormFactor.cover),
+    (
+      'iPhone 16 on its side',
+      Size(852, 393),
+      FormFactor.phone,
+      FormFactor.cover
+    ),
     ('iPhone 16 Pro Max', Size(440, 956), FormFactor.phone, FormFactor.cover),
     ('iPhone Duo closed', Size(466, 678), FormFactor.cover, FormFactor.cover),
     ('iPhone Duo open', Size(669, 951), FormFactor.tablet, FormFactor.tablet),
-    ('iPhone Duo open, on its side', Size(951, 669), FormFactor.tablet, FormFactor.tablet),
+    (
+      'iPhone Duo open, on its side',
+      Size(951, 669),
+      FormFactor.tablet,
+      FormFactor.tablet
+    ),
     ('iPad mini', Size(744, 1133), FormFactor.tablet, FormFactor.tablet),
-    ('iPad mini landscape', Size(1133, 744), FormFactor.tablet, FormFactor.tablet),
-    ('iPad Pro 13" landscape', Size(1366, 1024), FormFactor.tablet, FormFactor.tablet),
-    ('iPad Split View 1/3', Size(320, 1024), FormFactor.phone, FormFactor.cover),
+    (
+      'iPad mini landscape',
+      Size(1133, 744),
+      FormFactor.tablet,
+      FormFactor.tablet
+    ),
+    (
+      'iPad Pro 13" landscape',
+      Size(1366, 1024),
+      FormFactor.tablet,
+      FormFactor.tablet
+    ),
+    (
+      'iPad Split View 1/3',
+      Size(320, 1024),
+      FormFactor.phone,
+      FormFactor.cover
+    ),
     ('Pixel Fold outer', Size(412, 869), FormFactor.phone, FormFactor.cover),
     ('Pixel Fold inner', Size(841, 701), FormFactor.tablet, FormFactor.tablet),
     ('Galaxy Z Fold outer', Size(344, 882), FormFactor.phone, FormFactor.cover),
@@ -25,7 +50,8 @@ void main() {
 
   for (final (name, size, plain, closed) in matrix) {
     test('$name ${size.width}×${size.height} → ${plain.name}', () {
-      expect(resolveFormFactor(window: size, fold: FoldState.unsupported), plain);
+      expect(
+          resolveFormFactor(window: size, fold: FoldState.unsupported), plain);
     });
     test('$name with posture closed → ${closed.name}', () {
       expect(resolveFormFactor(window: size, fold: closedFoldable), closed);

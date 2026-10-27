@@ -50,7 +50,8 @@ class SideLayout extends StatelessWidget {
     return Row(
       textDirection: TextDirection.ltr,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: sideOnRight ? [contentChild, sideChild] : [sideChild, contentChild],
+      children:
+          sideOnRight ? [contentChild, sideChild] : [sideChild, contentChild],
     );
   }
 }

@@ -136,8 +136,23 @@ class FoldSplitView extends StatefulWidget {
   /// while an item is open.
   final SinglePaneBuilder? singleBuilder;
 
+  /// Whether [context] is in a pane shown beside (or above) the other one.
+  /// False in the one-pane layout and outside a [FoldSplitView]; use it to
+  /// show a back button only when a pane is alone.
+  static bool isSplitOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SplitScope>()?.split ?? false;
+
   @override
   State<FoldSplitView> createState() => _FoldSplitViewState();
+}
+
+class _SplitScope extends InheritedWidget {
+  const _SplitScope({required this.split, required super.child});
+
+  final bool split;
+
+  @override
+  bool updateShouldNotify(_SplitScope oldWidget) => split != oldWidget.split;
 }
 
 class _FoldSplitViewState extends State<FoldSplitView> with FoldRectTracker {
@@ -170,19 +185,23 @@ class _FoldSplitViewState extends State<FoldSplitView> with FoldRectTracker {
         mode: widget.mode,
         wideSplit: widget.wideSplit,
       );
-      if (split == null) {
-        return (widget.singleBuilder ?? _startOnly)(context, start, end);
-      }
-      return _panes(context, split, start, end);
+      return _SplitScope(
+        split: split != null,
+        child: split == null
+            ? (widget.singleBuilder ?? _startOnly)(context, start, end)
+            : _panes(context, split, start, end),
+      );
     });
   }
 
   static Widget _startOnly(BuildContext context, Widget start, Widget end) =>
       start;
 
-  Widget _panes(BuildContext context, FoldSplit split, Widget start, Widget end) {
+  Widget _panes(
+      BuildContext context, FoldSplit split, Widget start, Widget end) {
     final ambient = Directionality.of(context);
-    Widget pane(Widget child, {required bool first}) => MediaQuery.removePadding(
+    Widget pane(Widget child, {required bool first}) =>
+        MediaQuery.removePadding(
           context: context,
           removeRight: split.axis == Axis.horizontal && first,
           removeLeft: split.axis == Axis.horizontal && !first,
@@ -206,7 +225,8 @@ class _FoldSplitViewState extends State<FoldSplitView> with FoldRectTracker {
       textDirection: TextDirection.ltr,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(width: split.start, child: pane(rtl ? end : start, first: true)),
+        SizedBox(
+            width: split.start, child: pane(rtl ? end : start, first: true)),
         SizedBox(width: split.end - split.start),
         Expanded(child: pane(rtl ? start : end, first: false)),
       ],

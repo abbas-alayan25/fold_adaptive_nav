@@ -264,6 +264,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('detail 3'), findsOneWidget);
       expect(find.text('item 3'), findsNothing);
+      expect(FoldSplitView.isSplitOf(tester.element(find.text('detail 3'))),
+          isFalse);
 
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       await navigator.maybePop();
@@ -279,6 +281,10 @@ void main() {
       expect(find.text('item 3'), findsOneWidget);
       expect(find.text('pick one'), findsOneWidget);
       expect(tester.getSize(find.byKey(const Key('list'))).width, 420.5);
+      expect(
+        FoldSplitView.isSplitOf(tester.element(find.byKey(const Key('list')))),
+        isTrue,
+      );
     });
 
     testWidgets('a wide tablet splits at listFraction', (tester) async {

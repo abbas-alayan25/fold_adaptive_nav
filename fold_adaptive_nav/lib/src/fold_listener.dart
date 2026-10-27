@@ -53,7 +53,9 @@ class _FoldListenerState extends State<FoldListener> {
     if (!postureChanged && !formFactorChanged) return;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (postureChanged) widget.onPostureChanged?.call(previousPosture, posture);
+      if (postureChanged) {
+        widget.onPostureChanged?.call(previousPosture, posture);
+      }
       if (formFactorChanged) {
         widget.onFormFactorChanged?.call(previousFormFactor, formFactor);
       }

@@ -53,7 +53,12 @@ void main() {
     ('cover', Size(466, 678), closedFoldable, FormFactor.cover),
     ('Pixel Fold outer', Size(412, 869), closedFoldable, FormFactor.cover),
     ('Duo open', Size(669, 951), openFoldable, FormFactor.tablet),
-    ('iPad Pro landscape', Size(1366, 1024), FoldState.unsupported, FormFactor.tablet),
+    (
+      'iPad Pro landscape',
+      Size(1366, 1024),
+      FoldState.unsupported,
+      FormFactor.tablet
+    ),
   ];
 
   for (final direction in TextDirection.values) {
@@ -170,8 +175,7 @@ void main() {
     ('phone', const Size(393, 852), FoldState.unsupported),
     ('cover', const Size(466, 678), closedFoldable),
   ]) {
-    testWidgets('custom icons on the $name, sized and tinted',
-        (tester) async {
+    testWidgets('custom icons on the $name, sized and tinted', (tester) async {
       setWindowSize(tester, size);
       Widget probe(Key key) => Builder(
             builder: (context) => ColoredBox(
@@ -230,8 +234,7 @@ class _CounterState extends State<_Counter> {
 }
 
 void bodyStateTests() {
-  testWidgets('the body keeps its state when the device folds',
-      (tester) async {
+  testWidgets('the body keeps its state when the device folds', (tester) async {
     setWindowSize(tester, const Size(841, 701));
     final controller = await pumpScoped(
       tester,

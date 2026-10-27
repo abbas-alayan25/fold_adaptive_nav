@@ -12,6 +12,11 @@ class ExampleSettings {
     this.lockPhonesToPortrait = true,
     this.preview,
     this.rtl = false,
+    this.hideBarOnScroll = false,
+    this.drawerOnWideTablets = false,
+    this.narrowCoversAsPhones = false,
+    this.flipsAsPhones = true,
+    this.debugOverlay = false,
   });
 
   final TabletNavigation tabletNavigation;
@@ -22,6 +27,11 @@ class ExampleSettings {
   /// Pins the form factor, or null to follow the device.
   final FormFactor? preview;
   final bool rtl;
+  final bool hideBarOnScroll;
+  final bool drawerOnWideTablets;
+  final bool narrowCoversAsPhones;
+  final bool flipsAsPhones;
+  final bool debugOverlay;
 
   FoldAdaptiveConfig get config => FoldAdaptiveConfig(
         tabletNavigation: tabletNavigation,
@@ -29,6 +39,11 @@ class ExampleSettings {
         coverRailAlignment: coverRailAlignment,
         lockPhonesToPortrait: lockPhonesToPortrait,
         coverOrientations: const [DeviceOrientation.portraitUp],
+        drawerFromWidth: drawerOnWideTablets ? 1200 : null,
+        // Galaxy Z Fold covers (344–373 pt) get the bottom bar; the Pixel
+        // Fold and iPhone Duo covers keep the rail.
+        coverMinShortestSide: narrowCoversAsPhones ? 380 : 0,
+        treatOpenedFlipsAsPhones: flipsAsPhones,
       );
 
   ExampleSettings copyWith({
@@ -38,6 +53,11 @@ class ExampleSettings {
     bool? lockPhonesToPortrait,
     FormFactor? Function()? preview,
     bool? rtl,
+    bool? hideBarOnScroll,
+    bool? drawerOnWideTablets,
+    bool? narrowCoversAsPhones,
+    bool? flipsAsPhones,
+    bool? debugOverlay,
   }) =>
       ExampleSettings(
         tabletNavigation: tabletNavigation ?? this.tabletNavigation,
@@ -46,6 +66,11 @@ class ExampleSettings {
         lockPhonesToPortrait: lockPhonesToPortrait ?? this.lockPhonesToPortrait,
         preview: preview != null ? preview() : this.preview,
         rtl: rtl ?? this.rtl,
+        hideBarOnScroll: hideBarOnScroll ?? this.hideBarOnScroll,
+        drawerOnWideTablets: drawerOnWideTablets ?? this.drawerOnWideTablets,
+        narrowCoversAsPhones: narrowCoversAsPhones ?? this.narrowCoversAsPhones,
+        flipsAsPhones: flipsAsPhones ?? this.flipsAsPhones,
+        debugOverlay: debugOverlay ?? this.debugOverlay,
       );
 }
 
@@ -150,6 +175,43 @@ class _SettingsPageState extends State<SettingsPage> {
             value: s.lockPhonesToPortrait,
             onChanged: (v) =>
                 widget.onChanged(s.copyWith(lockPhonesToPortrait: v)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Lock opened flip phones like phones'),
+            subtitle: const Text('Galaxy Z Flip, Razr'),
+            value: s.flipsAsPhones,
+            onChanged: (v) => widget.onChanged(s.copyWith(flipsAsPhones: v)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Phone layout on narrow covers'),
+            subtitle:
+                const Text('Covers under 380 pt, such as a Galaxy Z Fold'),
+            value: s.narrowCoversAsPhones,
+            onChanged: (v) =>
+                widget.onChanged(s.copyWith(narrowCoversAsPhones: v)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Hide the bar while scrolling'),
+            value: s.hideBarOnScroll,
+            onChanged: (v) => widget.onChanged(s.copyWith(hideBarOnScroll: v)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Drawer on wide tablets'),
+            subtitle: const Text('From 1200 pt'),
+            value: s.drawerOnWideTablets,
+            onChanged: (v) =>
+                widget.onChanged(s.copyWith(drawerOnWideTablets: v)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Debug overlay'),
+            subtitle: const Text('Form factor, posture, fold and cameras'),
+            value: s.debugOverlay,
+            onChanged: (v) => widget.onChanged(s.copyWith(debugOverlay: v)),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,

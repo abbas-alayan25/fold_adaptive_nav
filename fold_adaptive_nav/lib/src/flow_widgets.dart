@@ -64,7 +64,10 @@ class FlowActionButton extends StatelessWidget {
           ? FilledButton.icon(
               onPressed: onPressed, style: style, icon: iconWidget, label: text)
           : OutlinedButton.icon(
-              onPressed: onPressed, style: style, icon: iconWidget, label: text),
+              onPressed: onPressed,
+              style: style,
+              icon: iconWidget,
+              label: text),
     );
   }
 

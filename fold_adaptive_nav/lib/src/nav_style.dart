@@ -204,8 +204,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
           BorderRadius.lerp(barBorderRadius, other.barBorderRadius, t),
       barMargin: EdgeInsets.lerp(barMargin, other.barMargin, t),
       railWidth: lerpDouble(railWidth, other.railWidth, t),
-      compactRailWidth:
-          lerpDouble(compactRailWidth, other.compactRailWidth, t),
+      compactRailWidth: lerpDouble(compactRailWidth, other.compactRailWidth, t),
       railAlignment: pick(railAlignment, other.railAlignment),
       animationDuration: pick(animationDuration, other.animationDuration),
     );

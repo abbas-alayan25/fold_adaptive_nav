@@ -153,8 +153,8 @@ void main() {
     });
 
     testWidgets('cutoutsOnly publishes the camera only', (tester) async {
-      final features =
-          await featuresWith(tester, DisplayFeatureBridge.cutoutsOnly, halfOpen);
+      final features = await featuresWith(
+          tester, DisplayFeatureBridge.cutoutsOnly, halfOpen);
       expect(features.map((f) => f.type), [DisplayFeatureType.cutout]);
     });
 
