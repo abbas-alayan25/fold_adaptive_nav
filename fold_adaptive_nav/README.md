@@ -142,6 +142,60 @@ NavDestination.custom(
 Leave out the `colorFilter` (or use `Image.asset`) to keep the image's own
 colors.
 
+### Badges and disabled tabs
+
+```dart
+NavDestination(icon: Icons.mail_outline, label: 'Inbox', badge: '3'), // '' = a dot
+NavDestination(icon: Icons.lock_outline, label: 'Pro', enabled: false),
+```
+
+### Styling
+
+`AdaptiveNavStyle` styles the bottom bar, the cover rail and the tablet rail
+together. Every field is optional and falls back to Material 3. Set it for
+the whole app as a theme extension, or on one scaffold with `style:`, which
+wins field by field.
+
+```dart
+MaterialApp(
+  theme: ThemeData(extensions: const [
+    AdaptiveNavStyle(
+      backgroundColor: Color(0xFF101418),
+      indicatorColor: Color(0xFF2E7D6B),
+      selectedColor: Colors.white,
+      unselectedColor: Colors.white70,
+      labelBehavior: NavLabelBehavior.onlySelected,
+    ),
+  ]),
+  ...
+)
+
+AdaptiveNavScaffold(
+  style: const AdaptiveNavStyle(
+    barHeight: 72,
+    barMargin: EdgeInsets.zero,          // edge to edge…
+    barBorderRadius: BorderRadius.zero,  // …and flat
+  ),
+  ...
+)
+```
+
+| Field | Default |
+|---|---|
+| `backgroundColor` | `surfaceContainer` |
+| `indicatorColor`, `indicatorShape` | `secondaryContainer`, stadium |
+| `selectedColor`, `unselectedColor` | `onSecondaryContainer`, `onSurfaceVariant` |
+| `selectedLabelStyle`, `unselectedLabelStyle` | merged over `labelMedium` |
+| `iconSize` | 24 (also the box for custom icons) |
+| `labelBehavior` | `NavLabelBehavior.alwaysShow` |
+| `elevation`, `shadowColor` | 3, `shadow` (bottom bar) |
+| `barHeight`, `barBorderRadius`, `barMargin` | 68, 32, 12 at sides and bottom |
+| `railWidth` | 88 (cover rail) |
+| `railAlignment` | `MainAxisAlignment.end`, under the thumb |
+| `animationDuration` | 200 ms on the cover rail |
+
+`AdaptiveNavScaffold.backgroundColor` sets the scaffold behind the body.
+
 ## Flows
 
 ```dart

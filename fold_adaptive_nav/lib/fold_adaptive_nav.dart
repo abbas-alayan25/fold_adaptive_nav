@@ -20,5 +20,6 @@ export 'src/flow_widgets.dart';
 export 'src/fold_media_query.dart';
 export 'src/fold_scope.dart';
 export 'src/form_factor.dart';
+export 'src/nav_style.dart';
 export 'src/orientation_policy.dart';
 export 'src/pinned_action_body.dart';
