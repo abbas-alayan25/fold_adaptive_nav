@@ -114,6 +114,34 @@ AdaptiveNavScaffold(
 `trailingAction` is a floating action button on phones and tablets, and sits
 at the foot of the rail on the cover display.
 
+### Custom icons (SVG, PNG)
+
+`NavDestination.custom` takes any widget as the icon. It is drawn in a
+24 × 24 box, under an `IconTheme` with the selected or unselected color.
+
+```dart
+// PNG: ImageIcon picks up the tab's color by itself.
+NavDestination.custom(
+  icon: const ImageIcon(AssetImage('assets/home.png')),
+  selectedIcon: const ImageIcon(AssetImage('assets/home_filled.png')),
+  label: 'Home',
+),
+
+// SVG (flutter_svg): read the color from the IconTheme.
+NavDestination.custom(
+  icon: Builder(
+    builder: (context) => SvgPicture.asset(
+      'assets/search.svg',
+      colorFilter: ColorFilter.mode(IconTheme.of(context).color!, BlendMode.srcIn),
+    ),
+  ),
+  label: 'Search',
+),
+```
+
+Leave out the `colorFilter` (or use `Image.asset`) to keep the image's own
+colors.
+
 ## Flows
 
 ```dart

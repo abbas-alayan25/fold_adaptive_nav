@@ -165,6 +165,51 @@ void main() {
     await tester.tap(find.text('Profile'));
     expect(selected, 2);
   });
+
+  for (final (name, size, state) in [
+    ('phone', const Size(393, 852), FoldState.unsupported),
+    ('cover', const Size(466, 678), closedFoldable),
+  ]) {
+    testWidgets('custom icons on the $name, sized and tinted',
+        (tester) async {
+      setWindowSize(tester, size);
+      Widget probe(Key key) => Builder(
+            builder: (context) => ColoredBox(
+              key: key,
+              color: IconTheme.of(context).color!,
+              child: const SizedBox(width: 100, height: 100),
+            ),
+          );
+      await pumpScoped(
+        tester,
+        AdaptiveNavScaffold(
+          destinations: [
+            NavDestination.custom(
+              icon: probe(const Key('home')),
+              selectedIcon: probe(const Key('home selected')),
+              label: 'Home',
+            ),
+            NavDestination.custom(
+              icon: probe(const Key('search')),
+              label: 'Search',
+            ),
+          ],
+          currentIndex: 0,
+          onSelect: (_) {},
+          body: const SizedBox(),
+        ),
+        state: state,
+      );
+      expect(tester.takeException(), isNull);
+
+      final selected = find.byKey(const Key('home selected'));
+      final unselected = find.byKey(const Key('search'));
+      expect(tester.getSize(selected), const Size.square(24));
+      expect(tester.getSize(unselected), const Size.square(24));
+      Color colorOf(Finder f) => tester.widget<ColoredBox>(f).color;
+      expect(colorOf(selected), isNot(colorOf(unselected)));
+    });
+  }
 }
 
 class _Counter extends StatefulWidget {

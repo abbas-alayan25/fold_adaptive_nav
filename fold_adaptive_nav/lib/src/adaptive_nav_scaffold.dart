@@ -9,14 +9,43 @@ import 'side_layout.dart';
 @immutable
 class NavDestination {
   const NavDestination({
-    required this.icon,
+    required IconData this.icon,
     required this.label,
     this.selectedIcon,
-  });
+  })  : customIcon = null,
+        customSelectedIcon = null;
 
-  final IconData icon;
+  /// A tab with any widget as its icon, such as an SVG or PNG.
+  ///
+  /// The icon is laid out in a 24 × 24 box under an [IconTheme] carrying the
+  /// selected or unselected color. [ImageIcon] picks that color up by itself;
+  /// for an SVG, read it with `IconTheme.of(context).color`.
+  const NavDestination.custom({
+    required Widget icon,
+    required this.label,
+    Widget? selectedIcon,
+  })  : icon = null,
+        selectedIcon = null,
+        customIcon = icon,
+        customSelectedIcon = selectedIcon;
+
+  final IconData? icon;
   final IconData? selectedIcon;
+  final Widget? customIcon;
+  final Widget? customSelectedIcon;
   final String label;
+
+  /// The icon to draw, at 24 × 24 so custom images can't stretch the bar.
+  Widget buildIcon({required bool selected, Color? color}) {
+    final custom = selected ? customSelectedIcon ?? customIcon : customIcon;
+    if (custom == null) {
+      return Icon(selected ? selectedIcon ?? icon : icon, color: color);
+    }
+    final box = SizedBox.square(dimension: 24, child: custom);
+    return color == null
+        ? box
+        : IconTheme.merge(data: IconThemeData(color: color), child: box);
+  }
 }
 
 /// Tabs that move to where the thumb is:
@@ -138,8 +167,8 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
             destinations: [
               for (final d in destinations)
                 NavigationRailDestination(
-                  icon: Icon(d.icon),
-                  selectedIcon: Icon(d.selectedIcon ?? d.icon),
+                  icon: d.buildIcon(selected: false),
+                  selectedIcon: d.buildIcon(selected: true),
                   label: Text(d.label),
                 ),
             ],
@@ -190,8 +219,8 @@ class _FloatingNavBar extends StatelessWidget {
               destinations: [
                 for (final d in destinations)
                   NavigationDestination(
-                    icon: Icon(d.icon),
-                    selectedIcon: Icon(d.selectedIcon ?? d.icon),
+                    icon: d.buildIcon(selected: false),
+                    selectedIcon: d.buildIcon(selected: true),
                     label: d.label,
                   ),
               ],
@@ -282,10 +311,9 @@ class _RailItem extends StatelessWidget {
                   color: selected ? colors.secondaryContainer : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  selected
-                      ? destination.selectedIcon ?? destination.icon
-                      : destination.icon,
+                alignment: Alignment.center,
+                child: destination.buildIcon(
+                  selected: selected,
                   color: foreground,
                 ),
               ),
