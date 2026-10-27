@@ -13,6 +13,19 @@ enum RailSide {
   followTextDirection,
 }
 
+/// Where along the cover display's rail the tabs sit. Together with
+/// [RailSide] this picks the corner: bottom right, top right, and so on.
+enum CoverRailAlignment {
+  /// At the foot of the rail, under the thumb. The default.
+  bottom,
+
+  /// In the middle of the rail.
+  center,
+
+  /// At the head of the rail, below the status bar.
+  top,
+}
+
 /// Tab navigation on tablets and opened foldables.
 enum TabletNavigation {
   /// A floating bottom bar, capped in width and centred. The default.
@@ -41,6 +54,7 @@ enum DisplayFeatureBridge {
 class FoldAdaptiveConfig {
   const FoldAdaptiveConfig({
     this.coverRailSide = RailSide.trailingPhysicalRight,
+    this.coverRailAlignment = CoverRailAlignment.bottom,
     this.tabletNavigation = TabletNavigation.bottomBar,
     this.coverOrientations = const [DeviceOrientation.portraitUp],
     this.lockPhonesToPortrait = true,
@@ -51,6 +65,10 @@ class FoldAdaptiveConfig {
   });
 
   final RailSide coverRailSide;
+
+  /// Where the tabs and the trailing action sit along the cover rail.
+  final CoverRailAlignment coverRailAlignment;
+
   final TabletNavigation tabletNavigation;
 
   /// Orientations allowed while a foldable is closed.
@@ -75,6 +93,7 @@ class FoldAdaptiveConfig {
   bool operator ==(Object other) =>
       other is FoldAdaptiveConfig &&
       other.coverRailSide == coverRailSide &&
+      other.coverRailAlignment == coverRailAlignment &&
       other.tabletNavigation == tabletNavigation &&
       listEquals(other.coverOrientations, coverOrientations) &&
       other.lockPhonesToPortrait == lockPhonesToPortrait &&
@@ -86,6 +105,7 @@ class FoldAdaptiveConfig {
   @override
   int get hashCode => Object.hash(
         coverRailSide,
+        coverRailAlignment,
         tabletNavigation,
         Object.hashAll(coverOrientations),
         lockPhonesToPortrait,

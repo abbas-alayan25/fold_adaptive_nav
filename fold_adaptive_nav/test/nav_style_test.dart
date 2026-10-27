@@ -163,6 +163,73 @@ void main() {
     });
   }
 
+  for (final (side, alignment) in [
+    (RailSide.trailingPhysicalRight, CoverRailAlignment.top),
+    (RailSide.trailingPhysicalRight, CoverRailAlignment.center),
+    (RailSide.trailingPhysicalRight, CoverRailAlignment.bottom),
+    (RailSide.physicalLeft, CoverRailAlignment.top),
+  ]) {
+    testWidgets('cover rail tabs: ${side.name}, ${alignment.name}',
+        (tester) async {
+      setWindowSize(tester, _cover);
+      await pumpScoped(
+        tester,
+        AdaptiveNavScaffold(
+          destinations: const [
+            NavDestination(icon: Icons.home_outlined, label: 'Home'),
+            NavDestination(icon: Icons.search, label: 'Search'),
+          ],
+          currentIndex: 0,
+          onSelect: (_) {},
+          trailingAction: FloatingActionButton(
+            key: const Key('fab'),
+            onPressed: () {},
+            child: const Icon(Icons.add),
+          ),
+          body: const SizedBox(),
+        ),
+        state: closedFoldable,
+        config: FoldAdaptiveConfig(
+          coverRailSide: side,
+          coverRailAlignment: alignment,
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      final home = tester.getRect(find.byIcon(Icons.home_outlined));
+      final fab = tester.getRect(find.byKey(const Key('fab')));
+      final third = _cover.height / 3;
+      switch (alignment) {
+        case CoverRailAlignment.top:
+          expect(home.top, lessThan(third));
+        case CoverRailAlignment.center:
+          expect(home.top, greaterThan(third / 2));
+          expect(fab.bottom, lessThan(_cover.height - third / 2));
+        case CoverRailAlignment.bottom:
+          expect(fab.bottom, greaterThan(_cover.height - third / 2));
+      }
+      if (side == RailSide.physicalLeft) {
+        expect(home.right, lessThan(AdaptiveNavScaffold.railWidth + 1));
+      } else {
+        expect(home.left, greaterThan(_cover.width - AdaptiveNavScaffold.railWidth - 1));
+      }
+    });
+  }
+
+  testWidgets('the style railAlignment wins over the config',
+      (tester) async {
+    setWindowSize(tester, _cover);
+    await pumpScoped(
+      tester,
+      _tabs(style: const AdaptiveNavStyle(railAlignment: MainAxisAlignment.start)),
+      state: closedFoldable,
+      config: const FoldAdaptiveConfig(
+        coverRailAlignment: CoverRailAlignment.bottom,
+      ),
+    );
+    expect(tester.getRect(find.byIcon(Icons.home_outlined)).top,
+        lessThan(_cover.height / 4));
+  });
+
   testWidgets('cover rail tabs at the top when aligned to start',
       (tester) async {
     setWindowSize(tester, _cover);

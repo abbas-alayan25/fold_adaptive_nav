@@ -8,6 +8,7 @@ class ExampleSettings {
   const ExampleSettings({
     this.tabletNavigation = TabletNavigation.bottomBar,
     this.coverRailSide = RailSide.trailingPhysicalRight,
+    this.coverRailAlignment = CoverRailAlignment.bottom,
     this.lockPhonesToPortrait = true,
     this.preview,
     this.rtl = false,
@@ -15,6 +16,7 @@ class ExampleSettings {
 
   final TabletNavigation tabletNavigation;
   final RailSide coverRailSide;
+  final CoverRailAlignment coverRailAlignment;
   final bool lockPhonesToPortrait;
 
   /// Pins the form factor, or null to follow the device.
@@ -24,6 +26,7 @@ class ExampleSettings {
   FoldAdaptiveConfig get config => FoldAdaptiveConfig(
         tabletNavigation: tabletNavigation,
         coverRailSide: coverRailSide,
+        coverRailAlignment: coverRailAlignment,
         lockPhonesToPortrait: lockPhonesToPortrait,
         coverOrientations: const [DeviceOrientation.portraitUp],
       );
@@ -31,6 +34,7 @@ class ExampleSettings {
   ExampleSettings copyWith({
     TabletNavigation? tabletNavigation,
     RailSide? coverRailSide,
+    CoverRailAlignment? coverRailAlignment,
     bool? lockPhonesToPortrait,
     FormFactor? Function()? preview,
     bool? rtl,
@@ -38,6 +42,7 @@ class ExampleSettings {
       ExampleSettings(
         tabletNavigation: tabletNavigation ?? this.tabletNavigation,
         coverRailSide: coverRailSide ?? this.coverRailSide,
+        coverRailAlignment: coverRailAlignment ?? this.coverRailAlignment,
         lockPhonesToPortrait: lockPhonesToPortrait ?? this.lockPhonesToPortrait,
         preview: preview != null ? preview() : this.preview,
         rtl: rtl ?? this.rtl,
@@ -113,6 +118,23 @@ class _SettingsPageState extends State<SettingsPage> {
             selected: {s.coverRailSide},
             onSelectionChanged: (v) =>
                 widget.onChanged(s.copyWith(coverRailSide: v.first)),
+          ),
+          const _Header('Cover rail tabs'),
+          SegmentedButton<CoverRailAlignment>(
+            segments: const [
+              ButtonSegment(
+                value: CoverRailAlignment.bottom,
+                label: Text('Bottom'),
+              ),
+              ButtonSegment(
+                value: CoverRailAlignment.center,
+                label: Text('Center'),
+              ),
+              ButtonSegment(value: CoverRailAlignment.top, label: Text('Top')),
+            ],
+            selected: {s.coverRailAlignment},
+            onSelectionChanged: (v) =>
+                widget.onChanged(s.copyWith(coverRailAlignment: v.first)),
           ),
           const SizedBox(height: 8),
           SwitchListTile(

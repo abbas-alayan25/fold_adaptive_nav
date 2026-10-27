@@ -1,3 +1,9 @@
+## 1.2.0
+
+* Add `FoldAdaptiveConfig.coverRailAlignment` (`top`, `center`, `bottom`):
+  with `coverRailSide`, picks the corner of the cover display the tabs sit in.
+* `SideRail` takes an optional `alignment`.
+
 ## 1.1.0
 
 * Add `NavDestination.custom` for SVG, PNG or any widget as a tab icon.

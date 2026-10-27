@@ -93,8 +93,9 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// [AdaptiveNavScaffold.railWidth]).
   final double? railWidth;
 
-  /// Where the cover rail's tabs sit (default: [MainAxisAlignment.end],
-  /// under the thumb).
+  /// Where the cover rail's tabs sit, for alignments
+  /// `FoldAdaptiveConfig.coverRailAlignment` doesn't offer (such as
+  /// [MainAxisAlignment.spaceEvenly]). Wins over that setting when set.
   final MainAxisAlignment? railAlignment;
 
   /// Speed of the selection animation (default: 200 ms on the cover rail,

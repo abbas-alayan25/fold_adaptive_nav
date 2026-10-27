@@ -46,6 +46,7 @@ the device; the layout follows `FoldScope`.
          FoldScope(
            config: const FoldAdaptiveConfig(
              coverRailSide: RailSide.trailingPhysicalRight,
+             coverRailAlignment: CoverRailAlignment.bottom,
              tabletNavigation: TabletNavigation.bottomBar,
              coverOrientations: [DeviceOrientation.portraitUp],
              lockPhonesToPortrait: true,
@@ -113,6 +114,28 @@ AdaptiveNavScaffold(
 
 `trailingAction` is a floating action button on phones and tablets, and sits
 at the foot of the rail on the cover display.
+
+### Where the tabs sit on the cover display
+
+Two settings in `FoldAdaptiveConfig` pick the corner of the closed foldable:
+
+| | `CoverRailAlignment.top` | `.center` | `.bottom` (default) |
+|---|---|---|---|
+| `RailSide.trailingPhysicalRight` (default) | top right | middle right | bottom right |
+| `RailSide.physicalLeft` | top left | middle left | bottom left |
+
+```dart
+FoldScope(
+  config: const FoldAdaptiveConfig(
+    coverRailSide: RailSide.trailingPhysicalRight,
+    coverRailAlignment: CoverRailAlignment.top, // tabs in the top-right corner
+  ),
+  child: ...,
+)
+```
+
+The trailing action moves with the tabs. Bottom is the default because it's
+where the thumb rests.
 
 ### Custom icons (SVG, PNG)
 
@@ -191,7 +214,7 @@ AdaptiveNavScaffold(
 | `elevation`, `shadowColor` | 3, `shadow` (bottom bar) |
 | `barHeight`, `barBorderRadius`, `barMargin` | 68, 32, 12 at sides and bottom |
 | `railWidth` | 88 (cover rail) |
-| `railAlignment` | `MainAxisAlignment.end`, under the thumb |
+| `railAlignment` | follows `coverRailAlignment`; set it for other alignments such as `spaceEvenly` |
 | `animationDuration` | 200 ms on the cover rail |
 
 `AdaptiveNavScaffold.backgroundColor` sets the scaffold behind the body.

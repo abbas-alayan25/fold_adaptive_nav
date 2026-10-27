@@ -385,6 +385,7 @@ class SideRail extends StatelessWidget {
     required this.onSelect,
     this.trailingAction,
     this.style = const AdaptiveNavStyle(),
+    this.alignment,
   });
 
   final List<NavDestination> destinations;
@@ -393,15 +394,26 @@ class SideRail extends StatelessWidget {
   final Widget? trailingAction;
   final AdaptiveNavStyle style;
 
+  /// Where the tabs sit along the rail (default:
+  /// [FoldAdaptiveConfig.coverRailAlignment] from the `FoldScope`).
+  final CoverRailAlignment? alignment;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final railAlignment = style.railAlignment ??
+        switch (alignment ?? FoldMediaQuery.configOf(context).coverRailAlignment) {
+          CoverRailAlignment.top => MainAxisAlignment.start,
+          CoverRailAlignment.center => MainAxisAlignment.center,
+          CoverRailAlignment.bottom => MainAxisAlignment.end,
+        };
     return Material(
       color: style.backgroundColor ?? scheme.surfaceContainer,
       child: SafeArea(
         child: Column(
-          mainAxisAlignment: style.railAlignment ?? MainAxisAlignment.end,
+          mainAxisAlignment: railAlignment,
           children: [
+            if (railAlignment != MainAxisAlignment.end) const SizedBox(height: 8),
             for (var i = 0; i < destinations.length; i++)
               _RailItem(
                 destination: destinations[i],

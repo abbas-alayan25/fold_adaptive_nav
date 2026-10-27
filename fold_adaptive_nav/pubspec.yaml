@@ -3,7 +3,7 @@ description: >-
   Detects foldables and their posture on iOS and Android, and adapts navigation
   by itself: bottom bar on phones, thumb rail on cover displays, tablet layouts
   when open.
-version: 1.1.0
+version: 1.2.0
 repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav
 topics: [foldable, adaptive, navigation, responsive]
 
