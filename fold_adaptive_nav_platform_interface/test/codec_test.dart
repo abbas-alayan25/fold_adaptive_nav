@@ -63,4 +63,37 @@ void main() {
   test('the default platform reports unsupported', () async {
     expect(await FoldPlatform.instance.snapshot(), FoldState.unsupported);
   });
+
+  // The map WireState.kt builds for an opened Pixel Fold (see
+  // WireStateTest.kt), with the extra keys Dart doesn't read yet.
+  test('decodes the Android map', () {
+    final state = FoldStateCodec.decode({
+      'v': 1,
+      'isFoldable': true,
+      'posture': 'fullyOpen',
+      'regions': [
+        {
+          'kind': 'fold',
+          'left': 420.57142857142856,
+          'top': 0.0,
+          'width': 0.0,
+          'height': 700.952380952381,
+          'isActive': false,
+          'isSeparating': false,
+          'occlusionType': 'none',
+          'orientation': 'vertical',
+        },
+      ],
+      'horizontalSizeClass': 'unspecified',
+      'verticalSizeClass': 'unspecified',
+      'hingeAngle': 180.0,
+    });
+    expect(state.isFoldable, isTrue);
+    expect(state.posture, HingePosture.fullyOpen);
+    expect(state.hingeAngle, 180);
+    expect(state.folds.single.bounds.left, closeTo(420.57, 0.01));
+    expect(state.folds.single.bounds.width, 0);
+    expect(state.folds.single.isActive, isFalse);
+    expect(state.horizontalSizeClass, SizeClass.unspecified);
+  });
 }

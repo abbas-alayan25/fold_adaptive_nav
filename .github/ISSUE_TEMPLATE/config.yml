@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/abbas-alayan25/fold_adaptive_nav/discussions
+    about: How do I…? Is this a good idea? Ask in Discussions.

@@ -42,6 +42,7 @@ EdgeInsets cameraInsets(Rect area, Iterable<Rect> cameras) {
 /// Only housings over this widget count, so one under an app bar doesn't pad
 /// the body below it. To keep content off the fold, use `FoldSplitView`.
 class FoldSafeArea extends StatefulWidget {
+  /// Pads [child] clear of the system bars and camera housings.
   const FoldSafeArea({
     super.key,
     required this.child,
@@ -52,11 +53,22 @@ class FoldSafeArea extends StatefulWidget {
     this.minimum = EdgeInsets.zero,
   });
 
+  /// The content to keep clear.
   final Widget child;
+
+  /// Whether to keep clear of intrusions on the left.
   final bool left;
+
+  /// Whether to keep clear of intrusions at the top.
   final bool top;
+
+  /// Whether to keep clear of intrusions on the right.
   final bool right;
+
+  /// Whether to keep clear of intrusions at the bottom.
   final bool bottom;
+
+  /// The least padding on each side.
   final EdgeInsets minimum;
 
   @override

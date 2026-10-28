@@ -2,9 +2,10 @@ name: fold_adaptive_nav_platform_interface
 description: >-
   A common platform interface for the fold_adaptive_nav plugin: the FoldState
   data model, the wire codec and the FoldPlatform base class.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav_platform_interface
-topics: [foldable, adaptive, navigation]
+issue_tracker: https://github.com/abbas-alayan25/fold_adaptive_nav/issues
+topics: [foldable, adaptive, navigation, responsive, layout]
 
 resolution: workspace
 

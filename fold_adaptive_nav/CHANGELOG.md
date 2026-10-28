@@ -1,3 +1,24 @@
+## 1.7.0
+
+* Add `AdaptiveNavStyle.look` (`NavLook.material`, `.cupertino`,
+  `.platform`): a `CupertinoTabBar` on phones, iPadOS-style side bars, and
+  this package's side bar in place of Material's rail and drawer.
+* "More" comes in the app's language (`NavStrings`, 21 languages);
+  `AdaptiveNavScaffold.moreLabel` is now optional.
+* Ctrl+1–9 (⌘ on Apple keyboards) pick tabs
+  (`AdaptiveNavScaffold.keyboardShortcuts`).
+* Add `AdaptiveNavScaffold.restorationId`: the open tab group and the
+  expanded side bar's state survive the system ending the app.
+* `FoldSplitView` and `AdaptiveListDetail` take `minPaneExtent` (280 pt).
+  On a flat device, a fold that would leave a pane narrower — a side bar
+  beside the view — gives way to a split by ratio, or to one pane. Half
+  open, the split stays at the fold. Set it to 0 for the old behaviour.
+* Every public member is documented.
+* The example has a Look setting, restores its state, and an Android
+  integration test that CI runs on a foldable emulator.
+* New: a go_router example, a migration guide from
+  `flutter_adaptive_scaffold`, and a demo GIF.
+
 ## 1.6.0
 
 * Add `TabletNavigation.railInLandscape`: a bottom bar while the window is

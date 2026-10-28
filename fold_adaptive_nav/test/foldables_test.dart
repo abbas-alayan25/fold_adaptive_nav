@@ -265,6 +265,66 @@ void main() {
       );
     });
 
+    group('minPaneExtent', () {
+      // The opened Pixel Fold with a 240 pt side bar: the view starts at 240
+      // and the fold is 180.5 pt into it.
+      const beside = Rect.fromLTWH(240, 0, 601, 701);
+      FoldSplit? besideBar(FoldDevicePreset p,
+              {double wideSplit = 0.5, Rect area = beside}) =>
+          resolveFoldSplit(
+            area: area,
+            fold: p.state,
+            formFactor: FormFactor.tablet,
+            wideSplit: wideSplit,
+            minPaneExtent: 280,
+          );
+
+      test('flat, a pane too narrow at the fold gives way to a ratio', () {
+        expect(besideBar(FoldDevicePreset.pixelFoldOpen),
+            const FoldSplit(axis: Axis.horizontal, start: 300.5, end: 300.5));
+      });
+
+      test('the ratio is clamped to keep both panes wide enough', () {
+        expect(besideBar(FoldDevicePreset.pixelFoldOpen, wideSplit: 0.4),
+            const FoldSplit(axis: Axis.horizontal, start: 280, end: 280));
+      });
+
+      test('no room for two panes means one', () {
+        expect(
+          besideBar(FoldDevicePreset.pixelFoldOpen,
+              area: const Rect.fromLTWH(240, 0, 500, 701)),
+          isNull,
+        );
+      });
+
+      test('half open, the split stays at the fold', () {
+        final bookHalfOpen = FoldDevicePreset.pixelFoldOpen.state.copyWith(
+          posture: HingePosture.partiallyOpen,
+        );
+        expect(
+          resolveFoldSplit(
+            area: beside,
+            fold: bookHalfOpen,
+            formFactor: FormFactor.tablet,
+            minPaneExtent: 280,
+          ),
+          const FoldSplit(axis: Axis.horizontal, start: 180.5, end: 180.5),
+        );
+      });
+
+      test('a fold with room either side is kept', () {
+        expect(
+          resolveFoldSplit(
+            area: Offset.zero & FoldDevicePreset.pixelFoldOpen.size,
+            fold: FoldDevicePreset.pixelFoldOpen.state,
+            formFactor: FormFactor.tablet,
+            minPaneExtent: 280,
+          ),
+          const FoldSplit(axis: Axis.horizontal, start: 420.5, end: 420.5),
+        );
+      });
+    });
+
     test('a rotated preset rotates its fold', () {
       final rotated = FoldDevicePreset.pixelFoldOpen.rotated;
       expect(rotated.size, const Size(701, 841));

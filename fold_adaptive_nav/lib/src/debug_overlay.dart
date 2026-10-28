@@ -18,9 +18,14 @@ import 'fold_media_query.dart';
 /// )
 /// ```
 class FoldDebugOverlay extends StatefulWidget {
+  /// Draws the overlay over [child] while [enabled].
   const FoldDebugOverlay({super.key, required this.child, this.enabled = true});
 
+  /// The app, usually the child `MaterialApp.builder` gets.
   final Widget child;
+
+  /// Whether to draw the overlay. Pass `kDebugMode` to keep it out of release
+  /// builds.
   final bool enabled;
 
   @override

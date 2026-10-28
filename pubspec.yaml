@@ -8,6 +8,7 @@ environment:
 workspace:
   - fold_adaptive_nav
   - fold_adaptive_nav/example
+  - examples/go_router_example
   - fold_adaptive_nav_platform_interface
   - fold_adaptive_nav_ios
   - fold_adaptive_nav_android

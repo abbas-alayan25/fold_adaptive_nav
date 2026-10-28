@@ -79,6 +79,7 @@ enum DisplayFeatureBridge {
 /// Everything about [FoldScope]'s behaviour that an app can choose.
 @immutable
 class FoldAdaptiveConfig {
+  /// The defaults suit most apps; set only what you want different.
   const FoldAdaptiveConfig({
     this.coverRailSide = RailSide.trailingPhysicalRight,
     this.coverRailAlignment = CoverRailAlignment.bottom,
@@ -100,11 +101,13 @@ class FoldAdaptiveConfig {
     this.expandedRailStartsCollapsed = false,
   });
 
+  /// Which edge of the cover display the rail and the thumb column sit on.
   final RailSide coverRailSide;
 
   /// Where the tabs and the trailing action sit along the cover rail.
   final CoverRailAlignment coverRailAlignment;
 
+  /// A bottom bar or a side bar on tablets and opened foldables.
   final TabletNavigation tabletNavigation;
 
   /// Orientations allowed while a foldable is closed.

@@ -1,0 +1,46 @@
+name: Device report
+description: Tell us how fold_adaptive_nav behaves on your foldable — working or not
+labels: [device-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is how the device table in the README grows. Run the example
+        app (`cd fold_adaptive_nav/example && flutter run`), turn on
+        **Settings → Debug overlay**, and try each posture below.
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS
+      placeholder: Galaxy Z Flip6, One UI 7 (Android 15)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: fold_adaptive_nav version
+      placeholder: 1.7.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: What works
+      options:
+        - label: "Closed: the overlay says `cover · closed`, tabs on a rail"
+        - label: "Open: the overlay says `tablet` (or `phone` on a flip), the right navigation"
+        - label: "Half open: posture `partiallyOpen`; the Player tab splits at the fold"
+        - label: "Folding and unfolding keeps the open tab, the open message and the scroll position"
+        - label: "Split screen with another app: the phone layout"
+        - label: "Orientation: the app turns where it should, and stays upright where it should"
+  - type: textarea
+    id: overlay
+    attributes:
+      label: Overlay labels per posture
+      placeholder: |
+        closed: cover · closed · 0° · 344×882 · compact
+        open:   tablet · fullyOpen · 180° · 690×829 · medium
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything off? Screenshots welcome

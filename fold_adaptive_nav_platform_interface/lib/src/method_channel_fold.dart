@@ -8,12 +8,15 @@ import 'models.dart';
 /// A [FoldPlatform] that talks to native code over the
 /// `fold_adaptive_nav/*` channels. The iOS and Android packages share it.
 class MethodChannelFold extends FoldPlatform {
+  /// Snapshots and the vertical system bar.
   @visibleForTesting
   static const methods = MethodChannel('fold_adaptive_nav/methods');
 
+  /// Posture, region and size-class changes.
   @visibleForTesting
   static const stateEvents = EventChannel('fold_adaptive_nav/state');
 
+  /// The hinge angle, at most once per frame.
   @visibleForTesting
   static const angleEvents = EventChannel('fold_adaptive_nav/angle');
 

@@ -9,8 +9,11 @@ import 'models.dart';
 /// regions are dropped, so a newer native side never crashes an older Dart
 /// side.
 abstract final class FoldStateCodec {
+  /// The wire format's version, sent as `"v"` in every map.
   static const int version = 1;
 
+  /// Reads a state the native side sent; anything unreadable becomes
+  /// [FoldState.unsupported] or a default value.
   static FoldState decode(Object? message) {
     if (message is! Map) return FoldState.unsupported;
     return FoldState(
@@ -27,6 +30,7 @@ abstract final class FoldStateCodec {
     );
   }
 
+  /// Writes [state] as the native side sends it, for fakes and tests.
   static Map<String, Object?> encode(FoldState state) => {
         'v': version,
         'isFoldable': state.isFoldable,

@@ -3,11 +3,14 @@ description: >-
   Detects foldables and their posture on iOS and Android, and adapts navigation
   by itself: bottom bar on phones, thumb rail on cover displays, tablet layouts
   when open.
-version: 1.6.0
+version: 1.7.0
 repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav
-topics: [foldable, adaptive, navigation, responsive]
+issue_tracker: https://github.com/abbas-alayan25/fold_adaptive_nav/issues
+topics: [foldable, adaptive, navigation, responsive, layout]
 
 screenshots:
+  - description: Folding and unfolding the example app. The tabs move under the thumb, an open message stays open beside the list, and tabletop puts the video above the fold.
+    path: screenshots/demo.gif
   - description: Closed iPhone Duo. Tabs move to a rail under the thumb; posture, hinge angle and camera regions come from UIKit.
     path: screenshots/ios_cover_tabs.jpg
   - description: Opened Pixel Fold. The list and the open message sit side by side, split at the fold.
@@ -24,8 +27,6 @@ screenshots:
     path: screenshots/ios_open_more.jpg
   - description: Closed Pixel Fold. The same rail, with a badge on Inbox, on Android's cover display.
     path: screenshots/android_cover_tabs.jpg
-  - description: A media screen on the iPhone Duo cover display, with the rail beside it.
-    path: screenshots/ios_cover_player.jpg
   - description: Opened iPhone Duo. The tablet layout with a floating bottom bar.
     path: screenshots/ios_open_tabs.jpg
 
@@ -52,5 +53,7 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   flutter_lints: ^6.0.0

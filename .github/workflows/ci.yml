@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dart:
+    name: Dart (Flutter ${{ matrix.flutter }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The lowest Flutter the packages support, and the newest.
+        flutter: ['3.38.x', '3.x']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Format
+        # Formatting can differ between SDKs; the newest one decides.
+        if: matrix.flutter == '3.x'
+        run: >-
+          dart format --output=none --set-exit-if-changed
+          fold_adaptive_nav fold_adaptive_nav_platform_interface
+          fold_adaptive_nav_ios/lib fold_adaptive_nav_android/lib
+          examples
+      - name: Analyze
+        run: |
+          for p in fold_adaptive_nav fold_adaptive_nav/example \
+                   fold_adaptive_nav_platform_interface \
+                   fold_adaptive_nav_ios fold_adaptive_nav_android \
+                   examples/go_router_example; do
+            (cd "$p" && flutter analyze) || exit 1
+          done
+      - name: Test
+        run: |
+          for p in fold_adaptive_nav fold_adaptive_nav/example \
+                   fold_adaptive_nav_platform_interface \
+                   examples/go_router_example; do
+            (cd "$p" && flutter test) || exit 1
+          done
+
+  android-unit:
+    name: Android unit tests (Kotlin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Builds once so the example's Gradle project, and its wrapper, exist.
+      - run: flutter build apk --debug
+        working-directory: fold_adaptive_nav/example
+      - run: ./gradlew :fold_adaptive_nav_android:testDebugUnitTest
+        working-directory: fold_adaptive_nav/example/android
+
+  android-foldable:
+    name: Android foldable emulator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          # The Pixel Fold hardware profile: a hinge sensor and fold postures.
+          profile: pixel_fold
+          disable-animations: true
+          working-directory: fold_adaptive_nav/example
+          script: flutter test integration_test --dart-define=EXPECT_FOLDABLE=true
+
+  ios:
+    name: iOS unit tests (Swift)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build ios --simulator --debug --no-codesign
+        working-directory: fold_adaptive_nav/example
+      - name: XCTest
+        working-directory: fold_adaptive_nav/example/ios
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for r in d for x in d[r] if x['name'].startswith('iPhone')))")
+          xcodebuild test -workspace Runner.xcworkspace -scheme Runner \
+            -destination "id=$DEVICE" -only-testing:RunnerTests | tail -40
+          exit ${PIPESTATUS[0]}
+
+  pana:
+    name: pub.dev score
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: sudo apt-get install -y webp
+      - run: dart pub global activate pana
+      # pana scores a package on its own, outside the workspace.
+      - name: Score fold_adaptive_nav
+        run: |
+          mkdir /tmp/pana && cp -r fold_adaptive_nav/. /tmp/pana/
+          cd /tmp/pana
+          sed -i '/^resolution: workspace$/d' pubspec.yaml example/pubspec.yaml
+          sed -i 's|fold_adaptive_nav: ^1.0.0|fold_adaptive_nav:\n    path: ../|' example/pubspec.yaml
+          dart pub global run pana --no-warning --exit-code-threshold 0 .

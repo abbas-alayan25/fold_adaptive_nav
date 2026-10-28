@@ -20,6 +20,7 @@ class ExampleSettings {
     this.tabletRailStyle = TabletRailStyle.standard,
     this.tabletRailAlignment = CoverRailAlignment.top,
     this.groupTabs = false,
+    this.look = NavLook.material,
   });
 
   final TabletNavigation tabletNavigation;
@@ -40,6 +41,9 @@ class ExampleSettings {
 
   /// Puts the tabs under groups, which side bars open one at a time.
   final bool groupTabs;
+
+  /// Material or Cupertino bars and side bars.
+  final NavLook look;
 
   FoldAdaptiveConfig get config => FoldAdaptiveConfig(
         tabletNavigation: tabletNavigation,
@@ -71,6 +75,7 @@ class ExampleSettings {
     TabletRailStyle? tabletRailStyle,
     CoverRailAlignment? tabletRailAlignment,
     bool? groupTabs,
+    NavLook? look,
   }) =>
       ExampleSettings(
         tabletNavigation: tabletNavigation ?? this.tabletNavigation,
@@ -87,6 +92,7 @@ class ExampleSettings {
         tabletRailStyle: tabletRailStyle ?? this.tabletRailStyle,
         tabletRailAlignment: tabletRailAlignment ?? this.tabletRailAlignment,
         groupTabs: groupTabs ?? this.groupTabs,
+        look: look ?? this.look,
       );
 }
 
@@ -129,6 +135,17 @@ class _SettingsPageState extends State<SettingsPage> {
             selected: {s.preview},
             onSelectionChanged: (v) =>
                 widget.onChanged(s.copyWith(preview: () => v.first)),
+          ),
+          const _Header('Look'),
+          SegmentedButton<NavLook>(
+            segments: const [
+              ButtonSegment(value: NavLook.material, label: Text('Material')),
+              ButtonSegment(value: NavLook.cupertino, label: Text('Cupertino')),
+              ButtonSegment(value: NavLook.platform, label: Text('Platform')),
+            ],
+            selected: {s.look},
+            onSelectionChanged: (v) =>
+                widget.onChanged(s.copyWith(look: v.first)),
           ),
           const _Header('Tablet navigation'),
           SegmentedButton<TabletNavigation>(

@@ -24,6 +24,7 @@ import 'split_view.dart';
 /// )
 /// ```
 class AdaptiveListDetail extends StatelessWidget {
+  /// Shows [list] and the open [detail].
   const AdaptiveListDetail({
     super.key,
     required this.list,
@@ -32,8 +33,11 @@ class AdaptiveListDetail extends StatelessWidget {
     this.emptyDetail = const SizedBox.shrink(),
     this.mode = FoldSplitMode.hingeOrWide,
     this.listFraction = 0.4,
+    this.minPaneExtent = 280,
   });
 
+  /// The list. Its items open with a callback of the app's that sets
+  /// [detail].
   final Widget list;
 
   /// The open item, or null.
@@ -45,11 +49,17 @@ class AdaptiveListDetail extends StatelessWidget {
   /// Beside the list while nothing is open, such as "Pick a message".
   final Widget emptyDetail;
 
+  /// When the panes go side by side.
   final FoldSplitMode mode;
 
   /// The fraction of the width the list takes in a wide window without a
-  /// fold. At a fold, the fold decides.
+  /// fold. At a fold, the fold decides, unless it would leave a pane
+  /// narrower than [minPaneExtent] on a flat device.
   final double listFraction;
+
+  /// The narrowest the list or the detail may get beside each other; see
+  /// [FoldSplitView.minPaneExtent].
+  final double minPaneExtent;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +67,7 @@ class AdaptiveListDetail extends StatelessWidget {
     return FoldSplitView(
       mode: mode,
       wideSplit: listFraction,
+      minPaneExtent: minPaneExtent,
       start: list,
       end: detail ?? emptyDetail,
       singleBuilder: (context, list, detail) => PopScope(

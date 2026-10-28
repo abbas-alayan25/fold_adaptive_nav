@@ -25,10 +25,14 @@ enum WindowSizeClass {
   /// The narrowest window width in this class.
   final double minWidth;
 
+  /// The class of a window [width] logical pixels wide.
   static WindowSizeClass fromWidth(double width) =>
       values.lastWhere((c) => width >= c.minWidth, orElse: () => compact);
 
+  /// Whether this class is [other] or wider.
   bool operator >=(WindowSizeClass other) => index >= other.index;
+
+  /// Whether this class is narrower than [other].
   bool operator <(WindowSizeClass other) => index < other.index;
 }
 
@@ -55,6 +59,7 @@ extension AdaptiveContext on BuildContext {
 /// Builds a different widget per form factor. [cover] and [tablet] fall back
 /// to [phone].
 class AdaptiveBuilder extends StatelessWidget {
+  /// Builds [phone], or [cover] or [tablet] where they are given.
   const AdaptiveBuilder({
     super.key,
     required this.phone,
@@ -62,8 +67,13 @@ class AdaptiveBuilder extends StatelessWidget {
     this.tablet,
   });
 
+  /// Builds for phones, and for the form factors left null.
   final WidgetBuilder phone;
+
+  /// Builds for the cover display of a closed foldable.
   final WidgetBuilder? cover;
+
+  /// Builds for tablets and opened foldables.
   final WidgetBuilder? tablet;
 
   @override

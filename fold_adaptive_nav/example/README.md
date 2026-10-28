@@ -16,7 +16,7 @@ flutter test         # the same app on 12 device presets
 | Transfer | `CoverActionRow` and a three-step flow on `PinnedActionBody` |
 | Player | `TabletopLayout` and `FoldSafeArea`: video above the fold, controls below, when half open |
 | Gallery | `context.adaptive`, `AdaptiveBuilder` and `context.windowSizeClass` choosing the grid |
-| Settings | Every `FoldAdaptiveConfig` option, live: rail side and corner, tablet bottom bar, side bar or side bar in landscape, icon or expanded side bar and its alignment, tab groups, drawer, narrow covers, flip phones, hide-on-scroll, RTL, debug overlay |
+| Settings | Material, Cupertino or platform look, and every `FoldAdaptiveConfig` option, live: rail side and corner, tablet bottom bar, side bar or side bar in landscape, icon or expanded side bar and its alignment, tab groups, drawer, narrow covers, flip phones, hide-on-scroll, RTL, debug overlay |
 
 Six tabs don't fit a bottom bar: phones and the cover rail show four and
 **More**, which lists Gallery and Settings. The tablet rail and drawer show
@@ -212,6 +212,13 @@ The presets cover a phone, a tablet, the iPhone Duo (closed and open), the
 Pixel Fold (closed, open and tabletop), the Galaxy Z Fold (closed and open)
 and the Galaxy Z Flip (closed, open and Flex mode). See
 [`test/presets_test.dart`](test/presets_test.dart).
+
+## More examples
+
+- [`examples/go_router_example`](https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/examples/go_router_example):
+  go_router with a back stack per tab and deep links.
+- `integration_test/foldable_test.dart`: the app on a real device or
+  emulator, through the native plugin (`flutter test integration_test`).
 
 ## Native setup
 

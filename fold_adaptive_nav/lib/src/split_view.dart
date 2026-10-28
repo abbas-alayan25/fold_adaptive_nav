@@ -24,6 +24,7 @@ enum FoldSplitMode {
 /// Where a [FoldSplitView] divides its area.
 @immutable
 class FoldSplit {
+  /// A split along [axis] from [start] to [end].
   const FoldSplit({required this.axis, required this.start, required this.end});
 
   /// [Axis.horizontal]: panes side by side. [Axis.vertical]: one on top of
@@ -33,6 +34,8 @@ class FoldSplit {
   /// Where the first pane ends and the second begins, in logical pixels from
   /// the area's physical left (or top). The space between is the fold.
   final double start;
+
+  /// Where the second pane begins.
   final double end;
 
   @override
@@ -61,7 +64,16 @@ FoldSplit? resolveFoldSplit({
   FoldAdaptiveConfig config = const FoldAdaptiveConfig(),
   FoldSplitMode mode = FoldSplitMode.hingeOrWide,
   double wideSplit = 0.5,
+  double minPaneExtent = 0,
 }) {
+  // A split by ratio that leaves both panes at least minPaneExtent, or none.
+  FoldSplit? byRatio() {
+    final width = area.width;
+    if (width < 2 * minPaneExtent) return null;
+    final at = (width * wideSplit).clamp(minPaneExtent, width - minPaneExtent);
+    return FoldSplit(axis: Axis.horizontal, start: at, end: at);
+  }
+
   final halfOpen = fold.posture == HingePosture.partiallyOpen;
   final open = halfOpen || fold.posture == HingePosture.fullyOpen;
   if (fold.isFoldable && open) {
@@ -75,6 +87,13 @@ FoldSplit? resolveFoldSplit({
           ? (bounds.left, bounds.right, area.width)
           : (bounds.top, bounds.bottom, area.height);
       if (start <= 0 || end >= extent) continue; // Not through this area.
+      // Flat, a fold off-centre in this area (a side bar beside it) can
+      // leave a pane too narrow, and the flat display takes a split by ratio
+      // instead. Half open, content never crosses the fold.
+      if (!halfOpen &&
+          (start < minPaneExtent || extent - end < minPaneExtent)) {
+        return byRatio();
+      }
       return FoldSplit(
         axis: down ? Axis.horizontal : Axis.vertical,
         start: start,
@@ -85,8 +104,7 @@ FoldSplit? resolveFoldSplit({
   if (mode == FoldSplitMode.hingeOrWide &&
       formFactor == FormFactor.tablet &&
       area.width >= config.expandedBreakpoint) {
-    final at = area.width * wideSplit;
-    return FoldSplit(axis: Axis.horizontal, start: at, end: at);
+    return byRatio();
   }
   return null;
 }
@@ -115,6 +133,7 @@ typedef SinglePaneBuilder = Widget Function(
 /// after the first frame; until then it assumes it fills the screen, which
 /// is where it usually goes. Give it bounded constraints.
 class FoldSplitView extends StatefulWidget {
+  /// Divides [start] and [end] at the fold.
   const FoldSplitView({
     super.key,
     required this.start,
@@ -122,14 +141,27 @@ class FoldSplitView extends StatefulWidget {
     this.mode = FoldSplitMode.hingeOrWide,
     this.wideSplit = 0.5,
     this.singleBuilder,
-  }) : assert(wideSplit > 0 && wideSplit < 1);
+    this.minPaneExtent = 280,
+  })  : assert(wideSplit > 0 && wideSplit < 1),
+        assert(minPaneExtent >= 0);
 
+  /// The first pane: on the left (the right in RTL), or on top.
   final Widget start;
+
+  /// The second pane.
   final Widget end;
+
+  /// When to show two panes.
   final FoldSplitMode mode;
 
   /// The fraction of the width [start] takes in a wide window without a fold.
   final double wideSplit;
+
+  /// The narrowest a pane may get. On a flat device, a fold that would leave
+  /// a pane narrower (a side bar beside the view moves the fold off-centre)
+  /// gives way to a split at [wideSplit], or to one pane where even that
+  /// doesn't fit. Half open, the split stays at the fold.
+  final double minPaneExtent;
 
   /// Lays out the panes when there is no split. Defaults to [start] alone,
   /// which drops [end] and its state; for a list and detail, return [end]
@@ -184,6 +216,7 @@ class _FoldSplitViewState extends State<FoldSplitView> with FoldRectTracker {
         config: config,
         mode: widget.mode,
         wideSplit: widget.wideSplit,
+        minPaneExtent: widget.minPaneExtent,
       );
       return _SplitScope(
         split: split != null,
@@ -242,6 +275,7 @@ class _FoldSplitViewState extends State<FoldSplitView> with FoldRectTracker {
 /// above [bottom]. Both keep their state across the change, so a video
 /// keeps playing.
 class TabletopLayout extends StatelessWidget {
+  /// Shows [top] above the fold and [bottom] below it.
   const TabletopLayout({
     super.key,
     required this.top,
@@ -249,8 +283,13 @@ class TabletopLayout extends StatelessWidget {
     this.flatBuilder,
   });
 
+  /// Above the fold, such as a video.
   final Widget top;
+
+  /// Below the fold, such as the video's controls.
   final Widget bottom;
+
+  /// Lays out [top] and [bottom] when the device isn't in tabletop.
   final SinglePaneBuilder? flatBuilder;
 
   /// Whether [fold] is in the tabletop posture: half open, fold across.

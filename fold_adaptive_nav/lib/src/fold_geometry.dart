@@ -6,14 +6,18 @@ import 'package:flutter/widgets.dart';
 ///
 /// `FoldPreview` puts one around its simulated screen.
 class FoldCoordinateSpace extends InheritedWidget {
+  /// Measures fold regions from the box that [rootKey] is on.
   const FoldCoordinateSpace({
     super.key,
     required this.rootKey,
     required super.child,
   });
 
+  /// The key of the box at the coordinate space's origin.
   final GlobalKey rootKey;
 
+  /// The box of the nearest [FoldCoordinateSpace], or null to measure from
+  /// the view.
   static RenderObject? rootOf(BuildContext context) => context
       .getInheritedWidgetOfExactType<FoldCoordinateSpace>()
       ?.rootKey
@@ -32,6 +36,7 @@ class FoldCoordinateSpace extends InheritedWidget {
 /// calls [trackRect] and the widget rebuilds once if it moved. Until then it
 /// is null; callers assume the widget fills the screen.
 mixin FoldRectTracker<T extends StatefulWidget> on State<T> {
+  /// The widget's rect, or null before its first layout.
   Rect? trackedRect;
 
   /// Call from `build` while the layout depends on [trackedRect].

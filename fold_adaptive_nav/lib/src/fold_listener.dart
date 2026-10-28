@@ -14,6 +14,8 @@ typedef FoldChangeCallback<T> = void Function(T previous, T current);
 /// The callbacks run after the frame that shows the change, so they may call
 /// `setState`. Nothing is called for the first reading.
 class FoldListener extends StatefulWidget {
+  /// Calls [onPostureChanged] and [onFormFactorChanged] for changes the
+  /// `FoldScope` above reports.
   const FoldListener({
     super.key,
     required this.child,
@@ -21,8 +23,13 @@ class FoldListener extends StatefulWidget {
     this.onFormFactorChanged,
   });
 
+  /// The widget below.
   final Widget child;
+
+  /// Called when the hinge posture changes, such as closed to fully open.
   final FoldChangeCallback<HingePosture>? onPostureChanged;
+
+  /// Called when the layout changes between phone, cover and tablet.
   final FoldChangeCallback<FormFactor>? onFormFactorChanged;
 
   @override

@@ -8,14 +8,19 @@ import 'models.dart';
 /// [FoldState.unsupported]. The iOS and Android packages replace it at
 /// startup.
 abstract class FoldPlatform extends PlatformInterface {
+  /// Creates an implementation; subclasses call this.
   FoldPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
   static FoldPlatform _instance = UnsupportedFoldPlatform();
 
+  /// The implementation in use: the native one on iOS and Android,
+  /// [UnsupportedFoldPlatform] elsewhere.
   static FoldPlatform get instance => _instance;
 
+  /// Replaces the implementation, as the iOS and Android packages do at
+  /// startup, or with a fake in tests.
   static set instance(FoldPlatform instance) {
     PlatformInterface.verify(instance, _token);
     _instance = instance;

@@ -1,0 +1,57 @@
+name: Bug report
+description: Something looks or behaves wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Foldable bugs depend on the device and its
+        posture, so the details below matter. The quickest way to collect
+        them is `FoldDebugOverlay` (see the README) and a screenshot.
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS
+      placeholder: Galaxy Z Fold6, One UI 7 (Android 15)
+    validations:
+      required: true
+  - type: dropdown
+    id: posture
+    attributes:
+      label: Posture when it happens
+      options:
+        - Closed (cover display)
+        - Open, flat
+        - Half open (book or tabletop)
+        - Split screen / multi-window
+        - Not a foldable
+        - While folding or unfolding
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "`flutter --version` and fold_adaptive_nav from pubspec.lock"
+      placeholder: Flutter 3.47.8, fold_adaptive_nav 1.7.0
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: overlay
+    attributes:
+      label: FoldDebugOverlay screenshot or label
+      description: |
+        Wrap your app with `FoldDebugOverlay(child: ...)` in
+        `MaterialApp.builder`, and paste its label, for example
+        `cover · closed · 0° · 344×882 · compact`.
+  - type: textarea
+    id: code
+    attributes:
+      label: Smallest code that shows it
+      render: dart

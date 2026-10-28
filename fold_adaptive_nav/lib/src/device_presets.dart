@@ -13,6 +13,7 @@ import 'form_factor.dart';
 /// the same layout as the device, not a replacement for testing on it.
 @immutable
 class FoldDevicePreset {
+  /// A screen of [size] logical pixels whose platform reports [state].
   const FoldDevicePreset({
     required this.name,
     required this.size,
@@ -20,8 +21,13 @@ class FoldDevicePreset {
     this.padding = EdgeInsets.zero,
   });
 
+  /// Shown in test names, such as "Pixel Fold, open".
   final String name;
+
+  /// The screen, in logical pixels.
   final Size size;
+
+  /// What the platform would report on the device.
   final FoldState state;
 
   /// The system bars' safe area.
@@ -75,6 +81,7 @@ class FoldDevicePreset {
     ),
   );
 
+  /// The iPhone Duo's cover display, closed.
   static const iPhoneDuoCover = FoldDevicePreset(
     name: 'iPhone Duo, closed',
     size: Size(466, 678),
@@ -82,6 +89,7 @@ class FoldDevicePreset {
     state: _closed,
   );
 
+  /// The opened iPhone Duo, its fold down the middle.
   static const iPhoneDuoOpen = FoldDevicePreset(
     name: 'iPhone Duo, open',
     size: Size(669, 951),
@@ -102,6 +110,7 @@ class FoldDevicePreset {
     ),
   );
 
+  /// The Pixel Fold's cover display, closed.
   static const pixelFoldCover = FoldDevicePreset(
     name: 'Pixel Fold, closed',
     size: Size(412, 869),
@@ -109,6 +118,7 @@ class FoldDevicePreset {
     state: _closedAndroid,
   );
 
+  /// The opened Pixel Fold in landscape, its fold down the middle.
   static const pixelFoldOpen = FoldDevicePreset(
     name: 'Pixel Fold, open',
     size: Size(841, 701),
@@ -158,6 +168,7 @@ class FoldDevicePreset {
     state: _closedAndroid,
   );
 
+  /// The opened Galaxy Z Fold, its fold down the middle.
   static const galaxyZFoldOpen = FoldDevicePreset(
     name: 'Galaxy Z Fold, open',
     size: Size(690, 829),
@@ -188,6 +199,7 @@ class FoldDevicePreset {
     state: _closedAndroid,
   );
 
+  /// The opened Galaxy Z Flip, flat: a tall phone with the fold across.
   static const galaxyZFlipOpen = FoldDevicePreset(
     name: 'Galaxy Z Flip, open',
     size: Size(412, 1006),
@@ -315,6 +327,7 @@ class FoldDevicePreset {
 /// It stands in for [FoldScope], so [child] is usually the `MaterialApp`.
 /// Nothing is asked of the platform and orientations are left alone.
 class FoldPreview extends StatefulWidget {
+  /// Renders [child] on [preset], laid out as [config] says.
   const FoldPreview({
     super.key,
     required this.preset,
@@ -322,8 +335,13 @@ class FoldPreview extends StatefulWidget {
     this.config = const FoldAdaptiveConfig(),
   });
 
+  /// The device to render on.
   final FoldDevicePreset preset;
+
+  /// The configuration, as `FoldScope.config` takes it.
   final FoldAdaptiveConfig config;
+
+  /// The app, usually a `MaterialApp`.
   final Widget child;
 
   @override

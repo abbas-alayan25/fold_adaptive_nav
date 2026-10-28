@@ -31,11 +31,18 @@ class _ExampleAppState extends State<ExampleApp> {
       child: MaterialApp(
         title: 'fold_adaptive_nav',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.teal),
+        theme: ThemeData(
+          colorSchemeSeed: Colors.teal,
+          extensions: [AdaptiveNavStyle(look: _settings.look)],
+        ),
         darkTheme: ThemeData(
           colorSchemeSeed: Colors.teal,
           brightness: Brightness.dark,
+          extensions: [AdaptiveNavStyle(look: _settings.look)],
         ),
+        // Keeps the open tab group and the side bar's state if Android ends
+        // the app in the background.
+        restorationScopeId: 'example',
         locale: _settings.rtl ? const Locale('ar') : null,
         // Pins the form factor below this point, to preview the cover and
         // tablet layouts on any device.
@@ -178,6 +185,7 @@ class _HomeShellState extends State<HomeShell> {
       child: widget.settings.groupTabs
           ? AdaptiveNavScaffold.grouped(
               groups: _groups,
+              restorationId: 'nav',
               currentIndex: _tab,
               onSelect: select,
               hideBarOnScroll: hide,
@@ -186,6 +194,7 @@ class _HomeShellState extends State<HomeShell> {
             )
           : AdaptiveNavScaffold(
               destinations: _destinations,
+              restorationId: 'nav',
               currentIndex: _tab,
               onSelect: select,
               hideBarOnScroll: hide,

@@ -18,7 +18,16 @@ enum HingePosture {
 }
 
 /// UIKit's size classes. Always [SizeClass.unspecified] on Android.
-enum SizeClass { compact, regular, unspecified }
+enum SizeClass {
+  /// A narrow or short window, such as a phone's.
+  compact,
+
+  /// A wide or tall window, such as a tablet's.
+  regular,
+
+  /// No size class: on Android, or before the first reading.
+  unspecified,
+}
 
 /// What a [FoldRegion] marks on the display.
 enum RegionKind {
@@ -32,12 +41,14 @@ enum RegionKind {
 /// A part of the display the app should keep content away from.
 @immutable
 class FoldRegion {
+  /// A region of [kind] at [bounds].
   const FoldRegion({
     required this.kind,
     required this.bounds,
     required this.isActive,
   });
 
+  /// A fold or a camera housing.
   final RegionKind kind;
 
   /// Logical pixels, in the Flutter view's coordinate space.
@@ -64,6 +75,7 @@ class FoldRegion {
 /// Everything the native side knows about the device's fold.
 @immutable
 class FoldState {
+  /// A full state; see [FoldState.unsupported] for platforms without one.
   const FoldState({
     required this.isFoldable,
     required this.posture,
@@ -87,6 +99,7 @@ class FoldState {
   /// The hardware has a hinge.
   final bool isFoldable;
 
+  /// The hinge position.
   final HingePosture posture;
 
   /// Degrees, 0 = shut, 180 = flat; null if unknown.
@@ -95,6 +108,7 @@ class FoldState {
   /// `FoldPlatform.instance.hingeAngle` for a per-frame value.
   final double? hingeAngle;
 
+  /// The folds and camera housings, in logical pixels.
   final List<FoldRegion> regions;
 
   /// iOS only; [SizeClass.unspecified] on Android.
@@ -111,6 +125,8 @@ class FoldState {
   Iterable<FoldRegion> get cameraOcclusions =>
       regions.where((r) => r.kind == RegionKind.cameraOcclusion);
 
+  /// This state with the given fields replaced. [hingeAngle] takes a function
+  /// so that it can be set to null.
   FoldState copyWith({
     bool? isFoldable,
     HingePosture? posture,

@@ -2,9 +2,10 @@ name: fold_adaptive_nav_ios
 description: >-
   iOS implementation of fold_adaptive_nav: hinge posture, fold and camera
   regions, size classes and the vertical system bar on iPhone Duo.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_adaptive_nav_ios
-topics: [foldable, adaptive, navigation]
+issue_tracker: https://github.com/abbas-alayan25/fold_adaptive_nav/issues
+topics: [foldable, adaptive, navigation, responsive, ios]
 
 resolution: workspace
 

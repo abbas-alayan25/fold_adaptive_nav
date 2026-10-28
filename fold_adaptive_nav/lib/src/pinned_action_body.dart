@@ -16,6 +16,7 @@ import 'side_layout.dart';
 /// | tablet, narrower than 840 pt | as phone, content kept to 640 pt |
 /// | tablet, 840 pt and wider | a 340 pt side panel with progress, footer and action |
 class PinnedActionBody extends StatelessWidget {
+  /// One step of a flow: [child] with its [action] where the thumb is.
   const PinnedActionBody({
     super.key,
     required this.child,
@@ -38,12 +39,17 @@ class PinnedActionBody extends StatelessWidget {
 
   /// 1-based progress; shows [FlowProgress] / [FlowProgressColumn] when set.
   final int? step;
+
+  /// The number of steps; set together with [step].
   final int? stepCount;
 
   /// Shown at the top of the tablet side panel, e.g. a summary.
   final Widget? panelHeader;
 
+  /// The widest the content gets on tablets narrower than 840 pt.
   static const double maxContentWidth = 640;
+
+  /// The width of the side panel on tablets from 840 pt.
   static const double panelWidth = 340;
 
   @override

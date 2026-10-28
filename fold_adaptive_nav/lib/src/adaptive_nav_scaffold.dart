@@ -1,19 +1,29 @@
 import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart'
+    show
+        CupertinoColors,
+        CupertinoDynamicColor,
+        CupertinoTabBar,
+        CupertinoTheme;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart'
+    show HardwareKeyboard, KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 
 import 'adaptive_sheet.dart';
 import 'config.dart';
 import 'fold_media_query.dart';
 import 'form_factor.dart';
+import 'nav_strings.dart';
 import 'nav_style.dart';
 import 'side_layout.dart';
 
 /// One tab of an [AdaptiveNavScaffold].
 @immutable
 class NavDestination {
+  /// A tab with a Material [icon], and [selectedIcon] while it is the current tab.
   const NavDestination({
     required IconData this.icon,
     required this.label,
@@ -40,10 +50,19 @@ class NavDestination {
         customIcon = icon,
         customSelectedIcon = selectedIcon;
 
+  /// The icon, or null for a [NavDestination.custom] tab.
   final IconData? icon;
+
+  /// The icon while this is the current tab (default: [icon]).
   final IconData? selectedIcon;
+
+  /// The widget icon of a [NavDestination.custom] tab.
   final Widget? customIcon;
+
+  /// [customIcon] while this is the current tab.
   final Widget? customSelectedIcon;
+
+  /// The tab's name, shown with its icon and read out by screen readers.
   final String label;
 
   /// A [Badge] on the icon: `''` shows a dot, any other text a count or
@@ -83,6 +102,7 @@ class NavDestination {
 /// the group that was open. Bottom bars show every tab, without headings.
 @immutable
 class NavGroup {
+  /// A group with a Material [icon], and [selectedIcon] while it holds the current tab.
   const NavGroup({
     required IconData this.icon,
     required this.label,
@@ -99,12 +119,19 @@ class NavGroup {
         selectedIcon = null,
         customIcon = icon;
 
+  /// The group's icon, or null for a [NavGroup.custom] group.
   final IconData? icon;
 
   /// The icon while the current tab is in this group.
   final IconData? selectedIcon;
+
+  /// The widget icon of a [NavGroup.custom] group.
   final Widget? customIcon;
+
+  /// The group's name: on its button, and as its heading in the drawer.
   final String label;
+
+  /// The group's tabs, in order; at least one.
   final List<NavDestination> destinations;
 
   /// The group's button, drawn like a tab. [badge] is `''` (a dot) when a
@@ -137,6 +164,7 @@ class NavGroup {
 /// [AdaptiveNavScaffold.grouped] puts the tabs under [NavGroup]s, which the
 /// side bars and the cover rail show as an accordion.
 class AdaptiveNavScaffold extends StatefulWidget {
+  /// Tabs from a flat list of at least two [destinations].
   const AdaptiveNavScaffold({
     super.key,
     required this.destinations,
@@ -148,9 +176,11 @@ class AdaptiveNavScaffold extends StatefulWidget {
     this.style,
     this.backgroundColor,
     this.maxBarDestinations = 5,
-    this.moreLabel = 'More',
+    this.moreLabel,
     this.moreIcon = Icons.more_horiz,
     this.hideBarOnScroll = false,
+    this.restorationId,
+    this.keyboardShortcuts = true,
   })  : groups = null,
         assert(destinations.length >= 2),
         assert(maxBarDestinations >= 2);
@@ -174,9 +204,11 @@ class AdaptiveNavScaffold extends StatefulWidget {
     this.style,
     this.backgroundColor,
     this.maxBarDestinations = 5,
-    this.moreLabel = 'More',
+    this.moreLabel,
     this.moreIcon = Icons.more_horiz,
     this.hideBarOnScroll = false,
+    this.restorationId,
+    this.keyboardShortcuts = true,
   })  : destinations = [for (final g in groups) ...g.destinations],
         assert(groups.isNotEmpty),
         assert(groups.every((g) => g.destinations.isNotEmpty)),
@@ -188,14 +220,22 @@ class AdaptiveNavScaffold extends StatefulWidget {
 
   /// The tab groups, or null for a flat list of tabs.
   final List<NavGroup>? groups;
+
+  /// The selected tab, as an index into [destinations].
   final int currentIndex;
+
+  /// Called with the index of the tab the user picks; update [currentIndex]
+  /// from it.
   final ValueChanged<int> onSelect;
+
+  /// The current tab's page. It keeps its state when the layout changes.
   final Widget body;
 
   /// A floating action button on phones and tablets; the foot of the rail on
   /// the cover display.
   final Widget? trailingAction;
 
+  /// An app bar above [body], in every layout.
   final PreferredSizeWidget? appBar;
 
   /// Overrides, field by field, the [AdaptiveNavStyle] in the theme.
@@ -209,14 +249,28 @@ class AdaptiveNavScaffold extends StatefulWidget {
   /// of the rest. The tablet rail and drawer show every tab.
   final int maxBarDestinations;
 
-  /// Label of the "More" tab; pass a translation.
-  final String moreLabel;
+  /// Label of the "More" tab.
+  ///
+  /// Null, the default, uses [NavStrings.more]: "More" in the app's language.
+  final String? moreLabel;
+
+  /// The icon of the "More" tab.
   final IconData moreIcon;
 
   /// Slide the bottom bar away while the body scrolls down, and back while
   /// it scrolls up or at the top. Only the body's outermost vertical
   /// scrollable counts.
   final bool hideBarOnScroll;
+
+  /// Restores the open tab group and the expanded side bar's state after
+  /// the system ends the app in the background, as other restorable
+  /// widgets do. Needs `MaterialApp.restorationScopeId`. The tab itself is
+  /// the app's: restore [currentIndex] with a `RestorableInt` of its own.
+  final String? restorationId;
+
+  /// Ctrl+1 to Ctrl+9 (⌘ on Apple keyboards) pick the first nine tabs, on a
+  /// tablet or phone with a hardware keyboard.
+  final bool keyboardShortcuts;
 
   /// Default width of the cover display's rail.
   static const double railWidth = 88;
@@ -235,7 +289,8 @@ class AdaptiveNavScaffold extends StatefulWidget {
   State<AdaptiveNavScaffold> createState() => _AdaptiveNavScaffoldState();
 }
 
-class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
+class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold>
+    with RestorationMixin {
   /// Each layout puts the body somewhere else in the tree. The key moves it
   /// instead of rebuilding it, so scroll positions, form input and stream
   /// subscriptions survive folding and unfolding.
@@ -254,11 +309,35 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
   bool _barVisible = true;
 
   /// The open tab group, shared by the cover rail and the tablet side bar so
-  /// it stays open across folding.
-  int? _openGroup;
+  /// it stays open across folding. At first, the group of the current tab.
+  late final _openGroup = RestorableIntN(_groupOf(currentIndex));
 
-  /// Whether the expanded side bar is expanded; null until it first shows.
-  bool? _railExpanded;
+  /// Whether the expanded side bar is expanded; null until the user picks,
+  /// which leaves it to `FoldAdaptiveConfig.expandedRailStartsCollapsed`.
+  final _railExpanded = RestorableBoolN(null);
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  @override
+  String? get restorationId => widget.restorationId;
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_openGroup, 'open_group');
+    registerForRestoration(_railExpanded, 'rail_expanded');
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    _openGroup.dispose();
+    _railExpanded.dispose();
+    super.dispose();
+  }
 
   List<NavGroup>? get groups => widget.groups;
 
@@ -275,12 +354,6 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _openGroup = _groupOf(currentIndex);
-  }
-
-  @override
   void didUpdateWidget(AdaptiveNavScaffold oldWidget) {
     super.didUpdateWidget(oldWidget);
     // A new tab starts with the bar in view.
@@ -290,14 +363,14 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     // A tab picked from elsewhere opens its group.
     if (oldWidget.currentIndex != currentIndex ||
         (oldWidget.groups == null) != (groups == null)) {
-      _openGroup = _groupOf(currentIndex) ?? _openGroup;
+      _openGroup.value = _groupOf(currentIndex) ?? _openGroup.value;
     }
-    if (groups == null) _openGroup = null;
+    if (groups == null) _openGroup.value = null;
   }
 
   /// Opens group [g] and closes the others, or closes it if it was open.
   void _toggleGroup(int g) =>
-      setState(() => _openGroup = _openGroup == g ? null : g);
+      setState(() => _openGroup.value = _openGroup.value == g ? null : g);
 
   bool _onUserScroll(UserScrollNotification notification) {
     if (!widget.hideBarOnScroll ||
@@ -331,7 +404,7 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
       ...destinations.take(_shownCount),
       NavDestination(
         icon: widget.moreIcon,
-        label: widget.moreLabel,
+        label: widget.moreLabel ?? NavStrings.more(context),
         // A dot when a tab behind it has a badge.
         badge: hidden.any((d) => d.badge != null) ? '' : null,
       ),
@@ -371,29 +444,118 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     );
   }
 
+  static const _digits = [
+    LogicalKeyboardKey.digit1,
+    LogicalKeyboardKey.digit2,
+    LogicalKeyboardKey.digit3,
+    LogicalKeyboardKey.digit4,
+    LogicalKeyboardKey.digit5,
+    LogicalKeyboardKey.digit6,
+    LogicalKeyboardKey.digit7,
+    LogicalKeyboardKey.digit8,
+    LogicalKeyboardKey.digit9,
+  ];
+
+  // Listens to the keyboard itself rather than through a Focus: a Focus
+  // would need focus first, and taking it would steal it from the page's
+  // own autofocus fields.
+  bool _onKey(KeyEvent event) {
+    if (!widget.keyboardShortcuts || event is! KeyDownEvent || !mounted) {
+      return false;
+    }
+    final keyboard = HardwareKeyboard.instance;
+    if (!(keyboard.isControlPressed || keyboard.isMetaPressed) ||
+        keyboard.isAltPressed ||
+        keyboard.isShiftPressed) {
+      return false;
+    }
+    final index = _digits.indexOf(event.logicalKey);
+    if (index < 0 ||
+        index >= destinations.length ||
+        !destinations[index].enabled) {
+      return false;
+    }
+    // Only the scaffold of the page in front, not one under a pushed route.
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return false;
+    onSelect(index);
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final config = FoldMediaQuery.configOf(context);
-    final style = AdaptiveNavStyle.of(context).merge(widget.style);
+    final chosen = AdaptiveNavStyle.of(context).merge(widget.style);
+    final cupertino = _isCupertino(context, chosen.look);
+    // The look's own colors and shapes, under the ones the app chose.
+    final style = cupertino ? _cupertinoStyle(context).merge(chosen) : chosen;
     final drawerFrom = config.drawerFromWidth;
     return switch (context.formFactor) {
-      FormFactor.phone =>
-        _bottomBarScaffold(context, style, maxBarWidth: style.barMaxWidth),
+      FormFactor.phone => cupertino
+          ? _cupertinoBarScaffold(context, chosen)
+          : _bottomBarScaffold(context, style, maxBarWidth: style.barMaxWidth),
       FormFactor.cover => _coverScaffold(context, style, config),
       FormFactor.tablet
           when drawerFrom != null &&
               MediaQuery.sizeOf(context).width >= drawerFrom =>
-        _drawerScaffold(context, style),
-      FormFactor.tablet when _tabletSideBar(context, config) =>
-        config.tabletRailStyle == TabletRailStyle.standard && groups == null
-            ? _railScaffold(context, style)
-            : _sideBarScaffold(context, style, config),
-      FormFactor.tablet => _bottomBarScaffold(
-          context,
-          style,
-          maxBarWidth: style.barMaxWidth ?? config.tabletBottomBarMaxWidth,
-        ),
+        cupertino
+            ? _sideBarScaffold(context, style, config, alwaysExpanded: true)
+            : _drawerScaffold(context, style),
+      FormFactor.tablet when _tabletSideBar(context, config) => !cupertino &&
+              config.tabletRailStyle == TabletRailStyle.standard &&
+              groups == null
+          ? _railScaffold(context, style)
+          : _sideBarScaffold(context, style, config),
+      FormFactor.tablet => cupertino
+          ? _cupertinoBarScaffold(context, chosen)
+          : _bottomBarScaffold(
+              context,
+              style,
+              maxBarWidth: style.barMaxWidth ?? config.tabletBottomBarMaxWidth,
+            ),
     };
+  }
+
+  static bool _isCupertino(BuildContext context, NavLook? look) =>
+      switch (look) {
+        NavLook.cupertino => true,
+        NavLook.platform => switch (Theme.of(context).platform) {
+            TargetPlatform.iOS || TargetPlatform.macOS => true,
+            _ => false,
+          },
+        NavLook.material || null => false,
+      };
+
+  /// iPadOS side bar colors: the accent on a light tint, rounded rows.
+  static AdaptiveNavStyle _cupertinoStyle(BuildContext context) {
+    final primary = CupertinoTheme.of(context).primaryColor;
+    Color resolve(Color color) => CupertinoDynamicColor.resolve(color, context);
+    return AdaptiveNavStyle(
+      backgroundColor: resolve(CupertinoColors.secondarySystemBackground),
+      indicatorColor: primary.withValues(alpha: 0.14),
+      indicatorShape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      selectedColor: primary,
+      unselectedColor: resolve(CupertinoColors.secondaryLabel),
+      groupBackgroundColor: resolve(CupertinoColors.tertiarySystemFill),
+    );
+  }
+
+  /// Side bars without Material's ripple when the look is Cupertino.
+  Widget _railTheme(
+    BuildContext context,
+    AdaptiveNavStyle style,
+    Widget child,
+  ) {
+    if (!_isCupertino(context, style.look)) return child;
+    final theme = Theme.of(context);
+    return Theme(
+      data: theme.copyWith(
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+      ),
+      child: child,
+    );
   }
 
   bool _tabletSideBar(BuildContext context, FoldAdaptiveConfig config) {
@@ -410,13 +572,55 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     AdaptiveNavStyle style, {
     double? maxBarWidth,
   }) {
-    Widget bar = _FloatingNavBar(
-      destinations: _barDestinations,
-      currentIndex: _barIndex,
-      onSelect: _onBarSelect,
-      style: style,
-      maxWidth: maxBarWidth,
+    return _barScaffold(
+      context,
+      _FloatingNavBar(
+        destinations: _barDestinations,
+        currentIndex: _barIndex,
+        onSelect: _onBarSelect,
+        style: style,
+        maxWidth: maxBarWidth,
+      ),
     );
+  }
+
+  /// A [CupertinoTabBar]. It takes only the colors, icon size and height the
+  /// app chose; the rest is the tab bar's own.
+  Widget _cupertinoBarScaffold(BuildContext context, AdaptiveNavStyle chosen) {
+    final tabs = _barDestinations;
+    final iconSize = chosen.iconSize ?? 26;
+    final disabled =
+        CupertinoDynamicColor.resolve(CupertinoColors.quaternaryLabel, context);
+    return _barScaffold(
+      context,
+      CupertinoTabBar(
+        items: [
+          for (final d in tabs)
+            BottomNavigationBarItem(
+              icon: d.buildIcon(
+                selected: false,
+                size: iconSize,
+                color: d.enabled ? null : disabled,
+              ),
+              activeIcon: d.buildIcon(selected: true, size: iconSize),
+              label: d.label,
+            ),
+        ],
+        currentIndex: _barIndex,
+        // The tab bar has no disabled items of its own.
+        onTap: (i) {
+          if (tabs[i].enabled) _onBarSelect(i);
+        },
+        activeColor: chosen.selectedColor,
+        inactiveColor: chosen.unselectedColor ?? CupertinoColors.inactiveGray,
+        backgroundColor: chosen.backgroundColor,
+        iconSize: iconSize,
+        height: chosen.barHeight ?? 50,
+      ),
+    );
+  }
+
+  Widget _barScaffold(BuildContext context, Widget bar) {
     // Slid by its own height, the bar and the gap below it leave the screen.
     bar = AnimatedSlide(
       offset: _barVisible ? Offset.zero : const Offset(0, 1),
@@ -459,24 +663,28 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
         content: body,
         // Groups show every tab, so nothing goes behind More; the rail
         // scrolls if they don't fit.
-        side: groups == null
-            ? SideRail(
-                destinations: _barDestinations,
-                currentIndex: _barIndex,
-                onSelect: _onBarSelect,
-                trailingAction: trailingAction,
-                style: railStyle,
-              )
-            : SideRail(
-                destinations: destinations,
-                currentIndex: currentIndex,
-                onSelect: onSelect,
-                groups: groups,
-                openGroup: _openGroup,
-                onGroupTap: _toggleGroup,
-                trailingAction: trailingAction,
-                style: railStyle,
-              ),
+        side: _railTheme(
+          context,
+          railStyle,
+          groups == null
+              ? SideRail(
+                  destinations: _barDestinations,
+                  currentIndex: _barIndex,
+                  onSelect: _onBarSelect,
+                  trailingAction: trailingAction,
+                  style: railStyle,
+                )
+              : SideRail(
+                  destinations: destinations,
+                  currentIndex: currentIndex,
+                  onSelect: onSelect,
+                  groups: groups,
+                  openGroup: _openGroup.value,
+                  onGroupTap: _toggleGroup,
+                  trailingAction: trailingAction,
+                  style: railStyle,
+                ),
+        ),
       ),
     );
   }
@@ -557,16 +765,21 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
 
   /// This package's own tablet side bar: expanded or an icon rail, flat or
   /// grouped.
+  ///
+  /// [alwaysExpanded] stands in for the drawer: expanded, no menu button.
   Widget _sideBarScaffold(
     BuildContext context,
     AdaptiveNavStyle style,
-    FoldAdaptiveConfig config,
-  ) {
-    final expandable = config.tabletRailStyle == TabletRailStyle.expanded;
-    final collapsible = expandable && config.expandedRailCollapsible;
+    FoldAdaptiveConfig config, {
+    bool alwaysExpanded = false,
+  }) {
+    final expandable =
+        alwaysExpanded || config.tabletRailStyle == TabletRailStyle.expanded;
+    final collapsible =
+        !alwaysExpanded && expandable && config.expandedRailCollapsible;
     final expanded = expandable &&
         (!collapsible ||
-            (_railExpanded ??= !config.expandedRailStartsCollapsed));
+            (_railExpanded.value ?? !config.expandedRailStartsCollapsed));
     final localizations = MaterialLocalizations.of(context);
     final leading = [
       if (collapsible)
@@ -581,7 +794,7 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
                   ? localizations.expandedIconTapHint
                   : localizations.collapsedIconTapHint,
               icon: Icon(expanded ? Icons.menu_open : Icons.menu),
-              onPressed: () => setState(() => _railExpanded = !expanded),
+              onPressed: () => setState(() => _railExpanded.value = !expanded),
             ),
           ),
         ),
@@ -608,19 +821,23 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
                 ? style.expandedRailWidth ??
                     AdaptiveNavScaffold.expandedRailWidth
                 : style.railWidth ?? AdaptiveNavScaffold.railWidth,
-            child: SideRail(
-              destinations: destinations,
-              currentIndex: currentIndex,
-              onSelect: onSelect,
-              groups: groups,
-              openGroup: _openGroup,
-              onGroupTap: _toggleGroup,
-              expanded: expanded,
-              alignment: config.tabletRailAlignment,
-              leading: leading.isEmpty
-                  ? null
-                  : Column(mainAxisSize: MainAxisSize.min, children: leading),
-              style: style,
+            child: _railTheme(
+              context,
+              style,
+              SideRail(
+                destinations: destinations,
+                currentIndex: currentIndex,
+                onSelect: onSelect,
+                groups: groups,
+                openGroup: _openGroup.value,
+                onGroupTap: _toggleGroup,
+                expanded: expanded,
+                alignment: config.tabletRailAlignment,
+                leading: leading.isEmpty
+                    ? null
+                    : Column(mainAxisSize: MainAxisSize.min, children: leading),
+                style: style,
+              ),
             ),
           ),
           const VerticalDivider(width: 1),
@@ -852,6 +1069,7 @@ class _NavColors {
 /// closes the others; [openGroup] is the open one. [expanded] lays each tab
 /// out as a row, its label beside its icon, for a wide side bar.
 class SideRail extends StatelessWidget {
+  /// A rail of [destinations] with [currentIndex] selected.
   const SideRail({
     super.key,
     required this.destinations,
@@ -867,10 +1085,19 @@ class SideRail extends StatelessWidget {
     this.leading,
   });
 
+  /// The tabs, in order.
   final List<NavDestination> destinations;
+
+  /// The selected tab, as an index into [destinations].
   final int currentIndex;
+
+  /// Called with the index of the tab the user picks.
   final ValueChanged<int> onSelect;
+
+  /// Shown after the tabs, such as a floating action button.
   final Widget? trailingAction;
+
+  /// How the rail looks; fields left null keep their defaults.
   final AdaptiveNavStyle style;
 
   /// Where the tabs sit along the rail (default:
@@ -879,7 +1106,11 @@ class SideRail extends StatelessWidget {
 
   /// Groups over [destinations], which must hold their tabs in order.
   final List<NavGroup>? groups;
+
+  /// The open group, as an index into [groups]; null when all are closed.
   final int? openGroup;
+
+  /// Called with a group's index when its button is tapped.
   final ValueChanged<int>? onGroupTap;
 
   /// Rows with the label beside the icon, instead of under it.

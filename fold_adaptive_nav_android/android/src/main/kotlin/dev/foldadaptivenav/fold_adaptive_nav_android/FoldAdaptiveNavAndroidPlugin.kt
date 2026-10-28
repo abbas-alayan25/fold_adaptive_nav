@@ -212,30 +212,22 @@ class FoldAdaptiveNavAndroidPlugin :
   private fun stateWithoutAngle(): Map<String, Any?> {
     val density = activity?.resources?.displayMetrics?.density ?: 1f
     val regions = fold?.let {
-      // WindowManager reports physical pixels; Flutter wants logical ones.
       val b = it.bounds
       listOf(
-        mapOf(
-          "kind" to "fold",
-          "left" to (b.left / density).toDouble(),
-          "top" to (b.top / density).toDouble(),
-          "width" to (b.width() / density).toDouble(),
-          "height" to (b.height() / density).toDouble(),
-          "isActive" to (it.state == FoldingFeature.State.HALF_OPENED),
-          "isSeparating" to it.isSeparating,
-          "occlusionType" to if (it.occlusionType == FoldingFeature.OcclusionType.FULL) "full" else "none",
-          "orientation" to if (it.orientation == FoldingFeature.Orientation.VERTICAL) "vertical" else "horizontal",
+        WireState.fold(
+          left = b.left,
+          top = b.top,
+          width = b.width(),
+          height = b.height(),
+          density = density,
+          halfOpened = it.state == FoldingFeature.State.HALF_OPENED,
+          separating = it.isSeparating,
+          fullOcclusion = it.occlusionType == FoldingFeature.OcclusionType.FULL,
+          vertical = it.orientation == FoldingFeature.Orientation.VERTICAL,
         ),
       )
     } ?: emptyList()
-    return mapOf(
-      "v" to 1,
-      "isFoldable" to isFoldable,
-      "posture" to posture(),
-      "regions" to regions,
-      "horizontalSizeClass" to "unspecified",
-      "verticalSizeClass" to "unspecified",
-    )
+    return WireState.state(isFoldable, posture(), regions)
   }
 
   private fun snapshot(): Map<String, Any?> =

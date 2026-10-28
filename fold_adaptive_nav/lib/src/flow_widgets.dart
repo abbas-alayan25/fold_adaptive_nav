@@ -12,6 +12,7 @@ const double _thumbColumnGap = 12;
 /// Marks a subtree as the cover display's thumb column. Buttons inside
 /// switch to their tall layout.
 class ThumbColumnScope extends InheritedWidget {
+  /// Marks [child] as the inside of a thumb column.
   const ThumbColumnScope({super.key, required super.child});
 
   /// Whether [context] is inside a thumb column.
@@ -27,6 +28,7 @@ class ThumbColumnScope extends InheritedWidget {
 /// A wide button with icon and label normally; in a [ThumbColumnScope], a
 /// tall one: icon over a label of up to three lines, at least 96 pt high.
 class FlowActionButton extends StatelessWidget {
+  /// The flow's main action, filled; [primary] false makes it outlined.
   const FlowActionButton({
     super.key,
     required this.label,
@@ -35,6 +37,7 @@ class FlowActionButton extends StatelessWidget {
     this.primary = true,
   });
 
+  /// A secondary action, outlined.
   const FlowActionButton.secondary({
     super.key,
     required this.label,
@@ -42,9 +45,16 @@ class FlowActionButton extends StatelessWidget {
     this.icon,
   }) : primary = false;
 
+  /// The button's text; up to three lines in a thumb column.
   final String label;
+
+  /// An icon before the label, or above it in a thumb column.
   final IconData? icon;
+
+  /// Called when tapped; null disables the button.
   final VoidCallback? onPressed;
+
+  /// Filled when true, outlined when false.
   final bool primary;
 
   @override
@@ -107,9 +117,13 @@ class FlowActionButton extends StatelessWidget {
 
 /// Buttons side by side; stacked inside a thumb column.
 class ActionGroup extends StatelessWidget {
+  /// Lays out [children] [spacing] apart.
   const ActionGroup({super.key, required this.children, this.spacing = 12});
 
+  /// The buttons, usually [FlowActionButton]s, the main one last.
   final List<Widget> children;
+
+  /// The gap between buttons.
   final double spacing;
 
   @override
@@ -139,6 +153,7 @@ List<Widget> _spaced(List<Widget> children, Widget gap) => [
 
 /// "Step 2 of 4" with a row of dots.
 class FlowProgress extends StatelessWidget {
+  /// Progress at [step] of [stepCount].
   const FlowProgress({
     super.key,
     required this.step,
@@ -148,6 +163,8 @@ class FlowProgress extends StatelessWidget {
 
   /// 1-based.
   final int step;
+
+  /// The number of steps in the flow.
   final int stepCount;
 
   /// The text above the dots; defaults to "Step [step] of [stepCount]".
@@ -198,6 +215,7 @@ class FlowProgress extends StatelessWidget {
 
 /// [FlowProgress] for the thumb column: "2/4" over a column of dots.
 class FlowProgressColumn extends FlowProgress {
+  /// Progress at [step] of [stepCount], as a column.
   const FlowProgressColumn({
     super.key,
     required super.step,
@@ -226,13 +244,17 @@ class FlowProgressColumn extends FlowProgress {
 /// Actions for a screen that isn't a scrolling form: a row under [child]
 /// normally, a thumb column on the cover display.
 class CoverActionRow extends StatelessWidget {
+  /// [actions] under [child], or beside it in a thumb column on the cover.
   const CoverActionRow({
     super.key,
     required this.child,
     required this.actions,
   });
 
+  /// The screen's content.
   final Widget child;
+
+  /// The buttons, the main one last.
   final List<Widget> actions;
 
   @override
@@ -263,9 +285,13 @@ class CoverActionRow extends StatelessWidget {
 /// The cover display's thumb column: [header] above [child], both as low as
 /// possible.
 class ThumbColumn extends StatelessWidget {
+  /// A thumb column with [header] above [child].
   const ThumbColumn({super.key, required this.child, this.header});
 
+  /// The action, usually a [FlowActionButton] or an [ActionGroup].
   final Widget child;
+
+  /// Shown above [child], such as a [FlowProgressColumn].
   final Widget? header;
 
   @override

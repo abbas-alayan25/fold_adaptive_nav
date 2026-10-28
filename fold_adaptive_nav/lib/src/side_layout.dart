@@ -9,6 +9,7 @@ import 'config.dart';
 /// back. The side is a fixed-width child, never a stretched one: without a
 /// width, a stretched second child takes the max width.
 class SideLayout extends StatelessWidget {
+  /// Places [side] on the edge [railSide] names, beside [content].
   const SideLayout({
     super.key,
     required this.railSide,
@@ -17,9 +18,16 @@ class SideLayout extends StatelessWidget {
     required this.side,
   });
 
+  /// The edge [side] goes on.
   final RailSide railSide;
+
+  /// The width of [side].
   final double sideWidth;
+
+  /// Takes the rest of the width.
   final Widget content;
+
+  /// The fixed-width side, such as a rail.
   final Widget side;
 
   @override

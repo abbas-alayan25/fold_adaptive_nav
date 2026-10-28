@@ -17,6 +17,7 @@ import 'orientation_policy.dart';
 /// factor through [FoldMediaQuery], and keeps the allowed orientations in
 /// line with [orientationsFor].
 class FoldScope extends StatefulWidget {
+  /// Reads the fold state and publishes it, with the form factor, to [child].
   const FoldScope({
     super.key,
     required this.child,
@@ -25,8 +26,13 @@ class FoldScope extends StatefulWidget {
     this.debugState,
   });
 
+  /// The app, usually its `MaterialApp`.
   final Widget child;
+
+  /// Layout and orientation choices.
   final FoldAdaptiveConfig config;
+
+  /// What goes into `MediaQuery.displayFeatures` (default: nothing).
   final DisplayFeatureBridge bridge;
 
   /// Drives the scope from a test instead of the platform. Use

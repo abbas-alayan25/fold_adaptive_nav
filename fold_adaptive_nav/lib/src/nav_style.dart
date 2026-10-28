@@ -14,6 +14,21 @@ enum NavLabelBehavior {
   alwaysHide,
 }
 
+/// The design language of the bars and side bars.
+enum NavLook {
+  /// Material 3. The default.
+  material,
+
+  /// iOS and iPadOS: a `CupertinoTabBar`, and side bars with rounded rows
+  /// and no ripple. The tablet rail and the drawer become this package's
+  /// side bar, as Material's have no Cupertino form.
+  cupertino,
+
+  /// [cupertino] on iOS and macOS (by `ThemeData.platform`), [material]
+  /// elsewhere.
+  platform,
+}
+
 /// How [AdaptiveNavScaffold]'s bars and rails look. Every field is optional;
 /// what is left out keeps the Material 3 default.
 ///
@@ -27,6 +42,7 @@ enum NavLabelBehavior {
 /// field over the theme.
 @immutable
 class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
+  /// A style; every field is optional.
   const AdaptiveNavStyle({
     this.backgroundColor,
     this.indicatorColor,
@@ -46,6 +62,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     this.railWidth,
     this.expandedRailWidth,
     this.groupBackgroundColor,
+    this.look,
     this.compactRailWidth,
     this.railAlignment,
     this.animationDuration,
@@ -75,11 +92,13 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// Icon size, also the box custom icons are drawn in (default: 24).
   final double? iconSize;
 
+  /// When tab labels show (default: [NavLabelBehavior.alwaysShow]).
   final NavLabelBehavior? labelBehavior;
 
   /// Shadow depth of the floating bottom bar (default: 3).
   final double? elevation;
 
+  /// Shadow color of the floating bottom bar (default: `shadow`).
   final Color? shadowColor;
 
   /// Height of the bottom bar (default: 68).
@@ -110,6 +129,10 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// Fill behind the tabs of an open tab group on a side bar (default:
   /// `surfaceContainerHighest`).
   final Color? groupBackgroundColor;
+
+  /// Material or Cupertino (default: [NavLook.material]). Colors and shapes
+  /// set here still win over the look's own.
+  final NavLook? look;
 
   /// Width of the compact cover rail, on covers narrower than
   /// `FoldAdaptiveConfig.compactCoverRailBelow` (default:
@@ -152,6 +175,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       railWidth: other.railWidth,
       expandedRailWidth: other.expandedRailWidth,
       groupBackgroundColor: other.groupBackgroundColor,
+      look: other.look,
       compactRailWidth: other.compactRailWidth,
       railAlignment: other.railAlignment,
       animationDuration: other.animationDuration,
@@ -178,6 +202,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     double? railWidth,
     double? expandedRailWidth,
     Color? groupBackgroundColor,
+    NavLook? look,
     double? compactRailWidth,
     MainAxisAlignment? railAlignment,
     Duration? animationDuration,
@@ -201,6 +226,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       railWidth: railWidth ?? this.railWidth,
       expandedRailWidth: expandedRailWidth ?? this.expandedRailWidth,
       groupBackgroundColor: groupBackgroundColor ?? this.groupBackgroundColor,
+      look: look ?? this.look,
       compactRailWidth: compactRailWidth ?? this.compactRailWidth,
       railAlignment: railAlignment ?? this.railAlignment,
       animationDuration: animationDuration ?? this.animationDuration,
@@ -239,6 +265,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
           lerpDouble(expandedRailWidth, other.expandedRailWidth, t),
       groupBackgroundColor:
           Color.lerp(groupBackgroundColor, other.groupBackgroundColor, t),
+      look: pick(look, other.look),
       compactRailWidth: lerpDouble(compactRailWidth, other.compactRailWidth, t),
       railAlignment: pick(railAlignment, other.railAlignment),
       animationDuration: pick(animationDuration, other.animationDuration),
@@ -266,6 +293,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       other.railWidth == railWidth &&
       other.expandedRailWidth == expandedRailWidth &&
       other.groupBackgroundColor == groupBackgroundColor &&
+      other.look == look &&
       other.compactRailWidth == compactRailWidth &&
       other.railAlignment == railAlignment &&
       other.animationDuration == animationDuration;
@@ -291,6 +319,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
         railWidth,
         expandedRailWidth,
         groupBackgroundColor,
+        look,
         compactRailWidth,
         railAlignment,
         animationDuration,

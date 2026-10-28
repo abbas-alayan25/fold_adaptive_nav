@@ -15,13 +15,19 @@ You add one widget and no device checks. For the content itself there are
 panes that meet at the fold (`FoldSplitView`, `TabletopLayout`),
 `FoldSafeArea`, per-form-factor values and device presets for tests.
 
+<p align="center"><img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/demo.gif" width="520" alt="Folding and unfolding the example app"></p>
+
+Coming from the discontinued `flutter_adaptive_scaffold`? See the
+[migration guide](https://github.com/abbas-alayan25/fold_adaptive_nav/blob/main/docs/migrating-from-flutter_adaptive_scaffold.md).
+
 ## Devices
 
 | Device | Status |
 |---|---|
-| Pixel Fold | Tested on the device (screenshots below) |
+| Pixel Fold, Pixel 10 Pro Fold | Tested on the device (screenshots below) |
 | iPhone Duo | Tested on the device (screenshots below) |
-| Galaxy Z Fold, Galaxy Z Flip, other Android foldables | Should work through Jetpack WindowManager; covered by presets in the tests, not yet checked on the devices |
+| Android emulator, Pixel Fold profile | Tested in CI on every change, through the native plugin |
+| Galaxy Z Fold, Galaxy Z Flip, other Android foldables | Should work through Jetpack WindowManager; covered by presets in the tests. [Send a device report](https://github.com/abbas-alayan25/fold_adaptive_nav/issues/new?template=device_report.yml) |
 | Phones, tablets, iPad Split View, Stage Manager | Layout follows the window size |
 
 ## Screenshots
@@ -224,10 +230,15 @@ rail and drawer show every tab.
 ```dart
 AdaptiveNavScaffold(
   destinations: sevenTabs,
-  moreLabel: l10n.more, // 'More' by default
+  moreLabel: l10n.more, // optional
   ...
 )
 ```
+
+Without `moreLabel`, "More" comes in the app's language (`NavStrings.more`):
+Arabic, Chinese, Dutch, English, French, German, Hebrew, Hindi, Indonesian,
+Italian, Japanese, Korean, Persian, Polish, Portuguese, Russian, Spanish,
+Thai, Turkish, Ukrainian and Vietnamese, falling back to English.
 
 ### Side bar on tablets and opened foldables
 
@@ -333,7 +344,48 @@ a new tab. Only the body's outermost vertical scrollable counts.
 - With reduced motion on (`MediaQuery.disableAnimations`), the rail
   indicator, the bar's selection and hiding the bar don't animate.
 - Hidden labels (compact rail, `NavLabelBehavior.alwaysHide`) are still read
-  out by screen readers.
+  out by screen readers. Group buttons are announced as expanded or
+  collapsed.
+
+### Keyboard and mouse
+
+On a tablet or phone with a keyboard, Ctrl+1 to Ctrl+9 (⌘ on Apple
+keyboards) pick the first nine tabs; disabled tabs have no shortcut. Side bar
+tabs take focus with Tab and highlight under a mouse.
+`keyboardShortcuts: false` turns the shortcuts off.
+
+### Cupertino look
+
+```dart
+ThemeData(extensions: const [AdaptiveNavStyle(look: NavLook.platform)])
+```
+
+`NavLook.platform` is Cupertino on iOS and macOS, Material elsewhere;
+`NavLook.cupertino` is Cupertino everywhere.
+
+| | Material (default) | Cupertino |
+|---|---|---|
+| Phones, tablet bottom bar | Floating `NavigationBar` | `CupertinoTabBar` |
+| Cover rail, side bars | Pill indicator, ripple | iPadOS rows: rounded, accent tint, no ripple |
+| Tablet rail, drawer | Material `NavigationRail`, `NavigationDrawer` | This package's side bar (icon or expanded) |
+
+Colors and shapes the app sets in `AdaptiveNavStyle` win over the look's own.
+
+### Keeping state
+
+Folding, unfolding and turning keep everything: the scaffold moves the page
+instead of rebuilding it, and with the Android `configChanges` from the
+setup the activity isn't recreated. If Android ends the app in the
+background, give the scaffold a `restorationId` (and `MaterialApp` a
+`restorationScopeId`) to bring back the open tab group and the expanded or
+collapsed side bar:
+
+```dart
+AdaptiveNavScaffold(restorationId: 'nav', ...)
+```
+
+The current tab is the app's: restore it with a `RestorableInt`, or let
+go_router restore the location.
 
 ### Styling
 
@@ -421,6 +473,26 @@ StatefulShellRoute.indexedStack(
 )
 ```
 
+A complete app with deep links and tests on every preset:
+[`examples/go_router_example`](https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/examples/go_router_example).
+
+### With auto_route
+
+```dart
+AutoTabsRouter(
+  routes: const [HomeRoute(), OrdersRoute(), ProfileRoute()],
+  builder: (context, child) {
+    final tabs = AutoTabsRouter.of(context);
+    return AdaptiveNavScaffold(
+      destinations: destinations,
+      currentIndex: tabs.activeIndex,
+      onSelect: tabs.setActiveIndex,
+      body: child,
+    );
+  },
+)
+```
+
 ## Flows
 
 ```dart
@@ -466,6 +538,12 @@ FoldSplitView(
 `mode: FoldSplitMode.hinge` splits only at a real fold, `.tabletop` only
 when half open with the fold across. A flat flip phone is one screen and
 never splits. Both panes keep their state while the layout changes.
+
+A side bar beside the view moves the fold off-centre in it. On a flat
+device, a fold that would leave a pane narrower than `minPaneExtent`
+(280 pt) gives way to a split at `wideSplit`, or to one pane where even that
+doesn't fit. Half open, the split always stays at the fold: content never
+crosses a bent hinge.
 
 ### List and detail
 
@@ -625,3 +703,10 @@ This is a federated plugin:
 
 On web and desktop the state is `FoldState.unsupported`, and layout follows
 the window size alone.
+
+## Versions
+
+The packages follow [semantic versioning](https://semver.org): nothing
+breaks outside a major version, and anything removed is deprecated for at
+least one minor version first. A default that changes to fix a bug is called
+out in the CHANGELOG with the setting that restores the old behaviour.

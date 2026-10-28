@@ -6,13 +6,27 @@ import 'form_factor.dart';
 
 /// The parts of [FoldMediaQuery] a widget can depend on separately.
 enum FoldAspect {
+  /// [FoldMediaQuery.formFactorOf].
   formFactor,
+
+  /// [FoldMediaQuery.postureOf].
   posture,
+
+  /// [FoldMediaQuery.isFoldableOf].
   isFoldable,
+
+  /// [FoldMediaQuery.regionsOf].
   regions,
+
+  /// [FoldMediaQuery.horizontalSizeClassOf] and
+  /// [FoldMediaQuery.verticalSizeClassOf].
   sizeClass,
+
+  /// [FoldMediaQuery.stateOf].
   state,
-  config
+
+  /// [FoldMediaQuery.configOf].
+  config,
 }
 
 /// Publishes the fold state and form factor below a [FoldScope].
@@ -20,6 +34,8 @@ enum FoldAspect {
 /// Each `...Of` accessor registers a dependency on one aspect only, so a
 /// widget that reads [formFactorOf] doesn't rebuild when the regions move.
 class FoldMediaQuery extends InheritedModel<FoldAspect> {
+  /// Publishes [state], [formFactor] and [config]. [FoldScope] builds this;
+  /// apps read it with the `...Of` methods.
   const FoldMediaQuery({
     super.key,
     required this.state,
@@ -28,8 +44,13 @@ class FoldMediaQuery extends InheritedModel<FoldAspect> {
     required super.child,
   });
 
+  /// The fold state from the platform.
   final FoldState state;
+
+  /// The layout decision.
   final FormFactor formFactor;
+
+  /// The scope's configuration.
   final FoldAdaptiveConfig config;
 
   static FoldMediaQuery? _of(BuildContext context, FoldAspect aspect) =>
@@ -46,19 +67,24 @@ class FoldMediaQuery extends InheritedModel<FoldAspect> {
     );
   }
 
+  /// The hinge posture; [HingePosture.unknown] without a `FoldScope`.
   static HingePosture postureOf(BuildContext context) =>
       _of(context, FoldAspect.posture)?.state.posture ?? HingePosture.unknown;
 
+  /// Whether the device has a hinge.
   static bool isFoldableOf(BuildContext context) =>
       _of(context, FoldAspect.isFoldable)?.state.isFoldable ?? false;
 
+  /// The fold and camera regions, in logical pixels.
   static List<FoldRegion> regionsOf(BuildContext context) =>
       _of(context, FoldAspect.regions)?.state.regions ?? const [];
 
+  /// UIKit's horizontal size class; [SizeClass.unspecified] on Android.
   static SizeClass horizontalSizeClassOf(BuildContext context) =>
       _of(context, FoldAspect.sizeClass)?.state.horizontalSizeClass ??
       SizeClass.unspecified;
 
+  /// UIKit's vertical size class; [SizeClass.unspecified] on Android.
   static SizeClass verticalSizeClassOf(BuildContext context) =>
       _of(context, FoldAspect.sizeClass)?.state.verticalSizeClass ??
       SizeClass.unspecified;
@@ -67,6 +93,7 @@ class FoldMediaQuery extends InheritedModel<FoldAspect> {
   static FoldState stateOf(BuildContext context) =>
       _of(context, FoldAspect.state)?.state ?? FoldState.unsupported;
 
+  /// The `FoldScope`'s configuration, or the defaults without one.
   static FoldAdaptiveConfig configOf(BuildContext context) =>
       _of(context, FoldAspect.config)?.config ?? const FoldAdaptiveConfig();
 
@@ -106,18 +133,23 @@ class FoldMediaQuery extends InheritedModel<FoldAspect> {
 
 /// `context.formFactor`, shorthand for [FoldMediaQuery.formFactorOf].
 extension FoldContext on BuildContext {
+  /// The form factor; see [FoldMediaQuery.formFactorOf].
   FormFactor get formFactor => FoldMediaQuery.formFactorOf(this);
 }
 
 /// Pins the form factor of a subtree, for tests and previews.
 class FormFactorOverride extends StatelessWidget {
+  /// Reports [formFactor] to [child] and everything below it.
   const FormFactorOverride({
     super.key,
     required this.formFactor,
     required this.child,
   });
 
+  /// The form factor to report.
   final FormFactor formFactor;
+
+  /// The subtree.
   final Widget child;
 
   @override
