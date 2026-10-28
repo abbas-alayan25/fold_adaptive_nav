@@ -8,7 +8,8 @@ and switches your app's navigation by itself:
 | Ordinary phone | Floating bottom bar | Pinned to the bottom | Portrait |
 | Foldable, closed (cover display) | Rail on the physical right, under the thumb | Thumb column on the right | Portrait (configurable) |
 | Foldable, opened | Same as tablet | Same as tablet | All |
-| Tablet | Full-width bottom bar, optionally capped (or a rail) | Bottom, or a side panel from 840 pt | All |
+| Foldable, opened, split screen | Same as phone | Same as phone | — |
+| Tablet | Full-width bottom bar, optionally capped, or a side bar (always, or only in landscape) | Bottom, or a side panel from 840 pt | All |
 
 You add one widget and no device checks. For the content itself there are
 panes that meet at the fold (`FoldSplitView`, `TabletopLayout`),
@@ -227,6 +228,87 @@ AdaptiveNavScaffold(
   ...
 )
 ```
+
+### Side bar on tablets and opened foldables
+
+```dart
+const FoldAdaptiveConfig(
+  tabletNavigation: TabletNavigation.railInLandscape, // or .rail: always
+  tabletRailStyle: TabletRailStyle.expanded,           // or .standard
+  tabletRailAlignment: CoverRailAlignment.top,         // .center, .bottom
+)
+```
+
+| `tabletNavigation` | Portrait | Landscape |
+|---|---|---|
+| `bottomBar` (default) | Bottom bar | Bottom bar |
+| `rail` | Side bar | Side bar |
+| `railInLandscape` | Bottom bar | Side bar |
+
+`TabletRailStyle.standard` is Material's `NavigationRail`.
+`TabletRailStyle.expanded` is a 240 pt side bar with each label beside its
+icon. A menu button at its head collapses it to an icon rail and back. The
+user's choice holds across folding and turning for as long as the scaffold
+lives.
+
+| Setting | Default |
+|---|---|
+| `expandedRailCollapsible` | `true`: show the menu button |
+| `expandedRailStartsCollapsed` | `false` |
+| `AdaptiveNavStyle.expandedRailWidth` | 240 |
+| `tabletRailAlignment` | `top`; the menu button and `trailingAction` stay at the head |
+
+### Tab groups
+
+```dart
+AdaptiveNavScaffold.grouped(
+  groups: const [
+    NavGroup(
+      icon: Icons.account_balance_outlined,
+      selectedIcon: Icons.account_balance,
+      label: 'Banking',
+      destinations: [
+        NavDestination(icon: Icons.wallet, label: 'Accounts'),
+        NavDestination(icon: Icons.credit_card, label: 'Cards'),
+      ],
+    ),
+    NavGroup(
+      icon: Icons.shopping_bag_outlined,
+      label: 'Shopping',
+      destinations: [
+        NavDestination(icon: Icons.store, label: 'Shop'),
+        NavDestination(icon: Icons.receipt_long, label: 'Orders'),
+      ],
+    ),
+  ],
+  currentIndex: tab, // counts every group's tabs in order: Shop is 2
+  onSelect: (i) => setState(() => tab = i),
+  body: pages[tab],
+)
+```
+
+| Where | Groups |
+|---|---|
+| Tablet side bar (expanded or icon rail) | An accordion: tapping a group opens its tabs and closes the open one |
+| Cover rail | The same accordion |
+| Phone and tablet bottom bars | Every tab, without headings; More as usual |
+| Drawer | Headings over each group's tabs |
+
+The group holding the current tab opens by itself, and a closed group
+holding it is drawn as selected. The open group stays open across folding
+and unfolding. On a short rail (a cover display on its side) an opening
+group scrolls itself into view. `AdaptiveNavStyle.groupBackgroundColor`
+fills the open group (default `surfaceContainerHighest`). Groups always get
+this package's side bar; with `TabletRailStyle.standard` it is drawn as an
+icon rail.
+
+### Split screen
+
+When the user runs two apps side by side on an opened foldable, each window
+is half the inner display and gets the phone layout: a bottom bar, flows
+pinned to the bottom. That also holds for the squat half of an opened iPhone
+Duo turned on its side, which before 1.6.0 got the cover rail. The
+`iPhoneDuoSplitScreen` and `pixelFoldSplitScreen` presets test it.
 
 ### Drawer on wide screens
 
@@ -510,7 +592,8 @@ for (final preset in FoldDevicePreset.all) {
 ```
 
 Presets: `phone`, `tablet`, `iPhoneDuoCover`, `iPhoneDuoOpen`,
-`pixelFoldCover`, `pixelFoldOpen`, `pixelFoldTabletop`, `galaxyZFoldCover`,
+`iPhoneDuoSplitScreen`, `pixelFoldCover`, `pixelFoldOpen`,
+`pixelFoldTabletop`, `pixelFoldSplitScreen`, `galaxyZFoldCover`,
 `galaxyZFoldOpen`, `galaxyZFlipCover`, `galaxyZFlipOpen`, `galaxyZFlipFlex`.
 `preset.rotated` turns one a quarter. The sizes are approximate: close
 enough to pick the device's layout, not a replacement for the device.

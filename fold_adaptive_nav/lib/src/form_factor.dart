@@ -44,7 +44,12 @@ FormFactor _defaultFormFactor(
   // width: phones run 1.78 (iPhone SE) to 2.2; the iPhone Duo's cover is 1.46.
   final squat = shortest >= 440 && window.longestSide / shortest < 1.6;
   final closed = fold.isFoldable && fold.posture == HingePosture.closed;
-  if (squat || (closed && shortest >= config.coverMinShortestSide)) {
+  // An opened foldable is never on its cover: a squat window there is half
+  // of the inner display in split screen, and gets the phone layout.
+  final open = fold.isFoldable &&
+      (fold.posture == HingePosture.partiallyOpen ||
+          fold.posture == HingePosture.fullyOpen);
+  if ((squat && !open) || (closed && shortest >= config.coverMinShortestSide)) {
     return FormFactor.cover;
   }
   return FormFactor.phone;

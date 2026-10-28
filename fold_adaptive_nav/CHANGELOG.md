@@ -1,3 +1,27 @@
+## 1.6.0
+
+* Add `TabletNavigation.railInLandscape`: a bottom bar while the window is
+  taller than wide, a side bar while it is wider, for opened foldables
+  turned on their side. The default stays `bottomBar`.
+* Add `TabletRailStyle.expanded` (`FoldAdaptiveConfig.tabletRailStyle`): a
+  240 pt side bar with the labels beside the icons, which a menu button
+  collapses to an icon rail and back (`expandedRailCollapsible`,
+  `expandedRailStartsCollapsed`, `AdaptiveNavStyle.expandedRailWidth`).
+* Add tab groups: `AdaptiveNavScaffold.grouped` and `NavGroup`. Side bars
+  and the cover rail show them as an accordion, one group open at a time;
+  bottom bars list every tab; the drawer shows them as headings
+  (`AdaptiveNavStyle.groupBackgroundColor`).
+* Add `FoldAdaptiveConfig.tabletRailAlignment` (top, center, bottom) for
+  this package's tablet side bar.
+* `SideRail` takes `groups`, `openGroup`, `onGroupTap`, `expanded` and
+  `leading`.
+* Fix: an app in split screen on an opened foldable got the cover rail when
+  its window was squat (half of an opened iPhone Duo on its side). An
+  opened foldable is never on its cover; split screen gets the phone
+  layout.
+* Add the `iPhoneDuoSplitScreen` and `pixelFoldSplitScreen` presets.
+* The example's settings try the side bar styles, alignment and groups.
+
 ## 1.5.0
 
 * The bottom bar on tablets and opened foldables is full width by default:

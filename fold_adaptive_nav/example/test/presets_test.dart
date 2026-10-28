@@ -35,6 +35,44 @@ void main() {
     });
   }
 
+  // Groups, the expanded side bar, and a side bar only in landscape.
+  const grouped = ExampleSettings(
+    groupTabs: true,
+    tabletRailStyle: TabletRailStyle.expanded,
+    tabletNavigation: TabletNavigation.railInLandscape,
+  );
+  for (final preset in [
+    for (final p in FoldDevicePreset.all) ...[p, p.rotated],
+  ]) {
+    testWidgets('grouped example on ${preset.name}', (tester) async {
+      await tester.pumpWidget(FoldPreview(
+        preset: preset,
+        config: grouped.config,
+        child: MaterialApp(
+          home: HomeShell(settings: grouped, onSettingsChanged: (_) {}),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      // On a side bar, open the Media group first; bars list every tab.
+      final media = find.byIcon(Icons.perm_media_outlined);
+      if (media.evaluate().isNotEmpty) {
+        await tester.ensureVisible(media.first);
+        await tester.tap(media.first);
+        await tester.pumpAndSettle();
+      }
+      final player = find.byIcon(Icons.play_circle_outline).first;
+      // The opened group scrolled itself into view.
+      final rail = find.byType(SideRail);
+      if (rail.evaluate().isNotEmpty) {
+        expect(tester.getRect(rail).contains(tester.getCenter(player)), isTrue);
+      }
+      await tester.tap(player);
+      await tester.pumpAndSettle();
+      expect(find.byType(Slider), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('More opens the tabs that do not fit the bar', (tester) async {
     await tester.pumpWidget(FoldPreview(
       preset: FoldDevicePreset.phone,

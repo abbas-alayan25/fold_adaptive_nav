@@ -208,6 +208,37 @@ class FoldDevicePreset {
     ),
   );
 
+  /// One of two apps side by side on the opened iPhone Duo, turned on its
+  /// side: a squat window, but not a cover display. No fold runs through it.
+  static const iPhoneDuoSplitScreen = FoldDevicePreset(
+    name: 'iPhone Duo, open, split screen',
+    size: Size(475, 669),
+    padding: EdgeInsets.only(top: 24, bottom: 20),
+    state: FoldState(
+      isFoldable: true,
+      posture: HingePosture.fullyOpen,
+      hingeAngle: 180,
+      regions: [],
+      horizontalSizeClass: SizeClass.compact,
+      verticalSizeClass: SizeClass.regular,
+    ),
+  );
+
+  /// One of two apps side by side on the opened Pixel Fold.
+  static const pixelFoldSplitScreen = FoldDevicePreset(
+    name: 'Pixel Fold, open, split screen',
+    size: Size(420, 701),
+    padding: _androidBars,
+    state: FoldState(
+      isFoldable: true,
+      posture: HingePosture.fullyOpen,
+      hingeAngle: 180,
+      regions: [],
+      horizontalSizeClass: SizeClass.unspecified,
+      verticalSizeClass: SizeClass.unspecified,
+    ),
+  );
+
   /// Half open, standing on its lower half (Flex mode).
   static const galaxyZFlipFlex = FoldDevicePreset(
     name: 'Galaxy Z Flip, Flex mode',
@@ -244,9 +275,11 @@ class FoldDevicePreset {
     tablet,
     iPhoneDuoCover,
     iPhoneDuoOpen,
+    iPhoneDuoSplitScreen,
     pixelFoldCover,
     pixelFoldOpen,
     pixelFoldTabletop,
+    pixelFoldSplitScreen,
     galaxyZFoldCover,
     galaxyZFoldOpen,
     galaxyZFlipCover,

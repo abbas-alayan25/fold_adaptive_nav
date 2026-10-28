@@ -39,11 +39,27 @@ enum CoverRailAlignment {
 
 /// Tab navigation on tablets and opened foldables.
 enum TabletNavigation {
-  /// A floating bottom bar, capped in width and centred. The default.
+  /// A floating bottom bar. The default.
   bottomBar,
 
-  /// A Material [NavigationRail] on the leading edge.
+  /// A side bar on the leading edge, in every orientation.
   rail,
+
+  /// A bottom bar while the window is taller than wide, a side bar while it
+  /// is wider than tall: an opened foldable turned on its side keeps its
+  /// content full height.
+  railInLandscape,
+}
+
+/// How the tablet side bar looks, when [TabletNavigation] picks one.
+enum TabletRailStyle {
+  /// A Material [NavigationRail]: icons with labels under them.
+  standard,
+
+  /// A wide side bar with each label beside its icon. A menu button at its
+  /// head collapses it to an icon rail and back, unless
+  /// [FoldAdaptiveConfig.expandedRailCollapsible] is off.
+  expanded,
 }
 
 /// What [FoldScope] writes into `MediaQuery.displayFeatures`.
@@ -78,6 +94,10 @@ class FoldAdaptiveConfig {
     this.treatOpenedFlipsAsPhones = true,
     this.formFactorResolver,
     this.drawerFromWidth,
+    this.tabletRailStyle = TabletRailStyle.standard,
+    this.tabletRailAlignment = CoverRailAlignment.top,
+    this.expandedRailCollapsible = true,
+    this.expandedRailStartsCollapsed = false,
   });
 
   final RailSide coverRailSide;
@@ -135,6 +155,23 @@ class FoldAdaptiveConfig {
   /// default, never shows one; Material suggests 1200.
   final double? drawerFromWidth;
 
+  /// How the tablet side bar looks. Tab groups (`AdaptiveNavScaffold.grouped`)
+  /// always get this package's side bar: [TabletRailStyle.standard] then
+  /// draws it as an icon rail.
+  final TabletRailStyle tabletRailStyle;
+
+  /// Where the tabs sit along the tablet side bar when it's this package's
+  /// own ([TabletRailStyle.expanded], or tab groups). The menu button and
+  /// trailing action stay at its head.
+  final CoverRailAlignment tabletRailAlignment;
+
+  /// Show the menu button that collapses the expanded side bar.
+  final bool expandedRailCollapsible;
+
+  /// Start the expanded side bar collapsed. The user's choice then holds
+  /// for as long as the scaffold lives, across folding and turning.
+  final bool expandedRailStartsCollapsed;
+
   @override
   bool operator ==(Object other) =>
       other is FoldAdaptiveConfig &&
@@ -151,7 +188,11 @@ class FoldAdaptiveConfig {
       other.compactCoverRailBelow == compactCoverRailBelow &&
       other.treatOpenedFlipsAsPhones == treatOpenedFlipsAsPhones &&
       other.formFactorResolver == formFactorResolver &&
-      other.drawerFromWidth == drawerFromWidth;
+      other.drawerFromWidth == drawerFromWidth &&
+      other.tabletRailStyle == tabletRailStyle &&
+      other.tabletRailAlignment == tabletRailAlignment &&
+      other.expandedRailCollapsible == expandedRailCollapsible &&
+      other.expandedRailStartsCollapsed == expandedRailStartsCollapsed;
 
   @override
   int get hashCode => Object.hash(
@@ -169,5 +210,9 @@ class FoldAdaptiveConfig {
         treatOpenedFlipsAsPhones,
         formFactorResolver,
         drawerFromWidth,
+        tabletRailStyle,
+        tabletRailAlignment,
+        expandedRailCollapsible,
+        expandedRailStartsCollapsed,
       );
 }

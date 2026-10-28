@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/scheduler.dart';
 
 import 'adaptive_sheet.dart';
 import 'config.dart';
@@ -76,17 +77,65 @@ class NavDestination {
   }
 }
 
+/// Some tabs under one heading, for [AdaptiveNavScaffold.grouped].
+///
+/// On side bars a group is a button that opens to show its tabs, and closes
+/// the group that was open. Bottom bars show every tab, without headings.
+@immutable
+class NavGroup {
+  const NavGroup({
+    required IconData this.icon,
+    required this.label,
+    required this.destinations,
+    this.selectedIcon,
+  }) : customIcon = null;
+
+  /// A group with any widget as its icon, as [NavDestination.custom].
+  const NavGroup.custom({
+    required Widget icon,
+    required this.label,
+    required this.destinations,
+  })  : icon = null,
+        selectedIcon = null,
+        customIcon = icon;
+
+  final IconData? icon;
+
+  /// The icon while the current tab is in this group.
+  final IconData? selectedIcon;
+  final Widget? customIcon;
+  final String label;
+  final List<NavDestination> destinations;
+
+  /// The group's button, drawn like a tab. [badge] is `''` (a dot) when a
+  /// tab in it has a badge.
+  NavDestination header({String? badge}) {
+    final custom = customIcon;
+    return custom == null
+        ? NavDestination(
+            icon: icon!,
+            selectedIcon: selectedIcon,
+            label: label,
+            badge: badge,
+          )
+        : NavDestination.custom(icon: custom, label: label, badge: badge);
+  }
+}
+
 /// Tabs that move to where the thumb is:
 ///
 /// | Form factor | Renders |
 /// |---|---|
 /// | phone | [body] + floating bottom bar; [trailingAction] above it |
 /// | cover | [body] + a rail on the physical right, action at its foot |
-/// | tablet | a bottom bar capped in width, or a [NavigationRail] |
+/// | tablet | a bottom bar, or a side bar (`FoldAdaptiveConfig.tabletNavigation`) |
 /// | tablet from `FoldAdaptiveConfig.drawerFromWidth` | a [NavigationDrawer] |
 ///
 /// More than [maxBarDestinations] tabs don't fit a bar or the cover rail:
 /// the last of its places becomes a "More" tab that lists the rest.
+///
+/// [AdaptiveNavScaffold.grouped] puts the tabs under [NavGroup]s, which the
+/// side bars and the cover rail show as an accordion.
 class AdaptiveNavScaffold extends StatefulWidget {
   const AdaptiveNavScaffold({
     super.key,
@@ -102,10 +151,43 @@ class AdaptiveNavScaffold extends StatefulWidget {
     this.moreLabel = 'More',
     this.moreIcon = Icons.more_horiz,
     this.hideBarOnScroll = false,
-  })  : assert(destinations.length >= 2),
+  })  : groups = null,
+        assert(destinations.length >= 2),
         assert(maxBarDestinations >= 2);
 
+  /// Tabs under [groups]. [currentIndex] and [onSelect] count the tabs of
+  /// all groups in order, as if they were one list: with groups of 3 and 2
+  /// tabs, the second group's first tab is 3.
+  ///
+  /// The cover rail and the tablet side bar (when
+  /// `FoldAdaptiveConfig.tabletNavigation` shows one) open one group at a
+  /// time. The group holding the current tab opens by itself. Bottom bars
+  /// and the drawer list every tab.
+  AdaptiveNavScaffold.grouped({
+    super.key,
+    required List<NavGroup> this.groups,
+    required this.currentIndex,
+    required this.onSelect,
+    required this.body,
+    this.trailingAction,
+    this.appBar,
+    this.style,
+    this.backgroundColor,
+    this.maxBarDestinations = 5,
+    this.moreLabel = 'More',
+    this.moreIcon = Icons.more_horiz,
+    this.hideBarOnScroll = false,
+  })  : destinations = [for (final g in groups) ...g.destinations],
+        assert(groups.isNotEmpty),
+        assert(groups.every((g) => g.destinations.isNotEmpty)),
+        assert(maxBarDestinations >= 2);
+
+  /// Every tab, in order; the groups' tabs one after the other with
+  /// [AdaptiveNavScaffold.grouped].
   final List<NavDestination> destinations;
+
+  /// The tab groups, or null for a flat list of tabs.
+  final List<NavGroup>? groups;
   final int currentIndex;
   final ValueChanged<int> onSelect;
   final Widget body;
@@ -142,6 +224,9 @@ class AdaptiveNavScaffold extends StatefulWidget {
   /// Default width of the compact cover rail, on narrow covers.
   static const double compactRailWidth = 64;
 
+  /// Default width of the expanded tablet side bar.
+  static const double expandedRailWidth = 240;
+
   /// The bottom of the safe area the home indicator itself takes. A
   /// floating bottom bar may overlap the rest of that area.
   static const double homeIndicatorHeight = 13;
@@ -168,6 +253,33 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
 
   bool _barVisible = true;
 
+  /// The open tab group, shared by the cover rail and the tablet side bar so
+  /// it stays open across folding.
+  int? _openGroup;
+
+  /// Whether the expanded side bar is expanded; null until it first shows.
+  bool? _railExpanded;
+
+  List<NavGroup>? get groups => widget.groups;
+
+  /// The group holding tab [index].
+  int? _groupOf(int index) {
+    final groups = this.groups;
+    if (groups == null) return null;
+    var start = 0;
+    for (var g = 0; g < groups.length; g++) {
+      start += groups[g].destinations.length;
+      if (index < start) return g;
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _openGroup = _groupOf(currentIndex);
+  }
+
   @override
   void didUpdateWidget(AdaptiveNavScaffold oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -175,7 +287,17 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     if (oldWidget.currentIndex != currentIndex || !widget.hideBarOnScroll) {
       _barVisible = true;
     }
+    // A tab picked from elsewhere opens its group.
+    if (oldWidget.currentIndex != currentIndex ||
+        (oldWidget.groups == null) != (groups == null)) {
+      _openGroup = _groupOf(currentIndex) ?? _openGroup;
+    }
+    if (groups == null) _openGroup = null;
   }
+
+  /// Opens group [g] and closes the others, or closes it if it was open.
+  void _toggleGroup(int g) =>
+      setState(() => _openGroup = _openGroup == g ? null : g);
 
   bool _onUserScroll(UserScrollNotification notification) {
     if (!widget.hideBarOnScroll ||
@@ -262,13 +384,24 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
           when drawerFrom != null &&
               MediaQuery.sizeOf(context).width >= drawerFrom =>
         _drawerScaffold(context, style),
-      FormFactor.tablet => config.tabletNavigation == TabletNavigation.rail
-          ? _railScaffold(context, style)
-          : _bottomBarScaffold(
-              context,
-              style,
-              maxBarWidth: style.barMaxWidth ?? config.tabletBottomBarMaxWidth,
-            ),
+      FormFactor.tablet when _tabletSideBar(context, config) =>
+        config.tabletRailStyle == TabletRailStyle.standard && groups == null
+            ? _railScaffold(context, style)
+            : _sideBarScaffold(context, style, config),
+      FormFactor.tablet => _bottomBarScaffold(
+          context,
+          style,
+          maxBarWidth: style.barMaxWidth ?? config.tabletBottomBarMaxWidth,
+        ),
+    };
+  }
+
+  bool _tabletSideBar(BuildContext context, FoldAdaptiveConfig config) {
+    final size = MediaQuery.sizeOf(context);
+    return switch (config.tabletNavigation) {
+      TabletNavigation.bottomBar => false,
+      TabletNavigation.rail => true,
+      TabletNavigation.railInLandscape => size.width > size.height,
     };
   }
 
@@ -324,13 +457,26 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
             ? style.compactRailWidth ?? AdaptiveNavScaffold.compactRailWidth
             : style.railWidth ?? AdaptiveNavScaffold.railWidth,
         content: body,
-        side: SideRail(
-          destinations: _barDestinations,
-          currentIndex: _barIndex,
-          onSelect: _onBarSelect,
-          trailingAction: trailingAction,
-          style: railStyle,
-        ),
+        // Groups show every tab, so nothing goes behind More; the rail
+        // scrolls if they don't fit.
+        side: groups == null
+            ? SideRail(
+                destinations: _barDestinations,
+                currentIndex: _barIndex,
+                onSelect: _onBarSelect,
+                trailingAction: trailingAction,
+                style: railStyle,
+              )
+            : SideRail(
+                destinations: destinations,
+                currentIndex: currentIndex,
+                onSelect: onSelect,
+                groups: groups,
+                openGroup: _openGroup,
+                onGroupTap: _toggleGroup,
+                trailingAction: trailingAction,
+                style: railStyle,
+              ),
       ),
     );
   }
@@ -338,6 +484,10 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
   Widget _drawerScaffold(BuildContext context, AdaptiveNavStyle style) {
     final colors = _NavColors(context, style);
     final iconSize = style.iconSize ?? 24;
+    final groups = this.groups;
+    final sections = groups == null
+        ? [(null, destinations)]
+        : [for (final g in groups) (g.label, g.destinations)];
     return Scaffold(
       appBar: appBar,
       backgroundColor: widget.backgroundColor,
@@ -375,14 +525,102 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
                       child: trailingAction,
                     ),
                   ),
-                for (final d in destinations)
-                  NavigationDrawerDestination(
-                    icon: d.buildIcon(selected: false, size: iconSize),
-                    selectedIcon: d.buildIcon(selected: true, size: iconSize),
-                    label: Text(d.label),
-                    enabled: d.enabled,
-                  ),
+                // The drawer has room for every tab, so groups become
+                // headings rather than an accordion.
+                for (final (i, (heading, tabs)) in sections.indexed) ...[
+                  if (heading != null)
+                    Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                          28, i == 0 ? 8 : 20, 16, 8),
+                      child: Text(
+                        heading,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  for (final d in tabs)
+                    NavigationDrawerDestination(
+                      icon: d.buildIcon(selected: false, size: iconSize),
+                      selectedIcon: d.buildIcon(selected: true, size: iconSize),
+                      label: Text(d.label),
+                      enabled: d.enabled,
+                    ),
+                ],
               ],
+            ),
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(child: body),
+        ],
+      ),
+    );
+  }
+
+  /// This package's own tablet side bar: expanded or an icon rail, flat or
+  /// grouped.
+  Widget _sideBarScaffold(
+    BuildContext context,
+    AdaptiveNavStyle style,
+    FoldAdaptiveConfig config,
+  ) {
+    final expandable = config.tabletRailStyle == TabletRailStyle.expanded;
+    final collapsible = expandable && config.expandedRailCollapsible;
+    final expanded = expandable &&
+        (!collapsible ||
+            (_railExpanded ??= !config.expandedRailStartsCollapsed));
+    final localizations = MaterialLocalizations.of(context);
+    final leading = [
+      if (collapsible)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Align(
+            alignment: expanded
+                ? AlignmentDirectional.centerStart
+                : AlignmentDirectional.center,
+            child: IconButton(
+              tooltip: expanded
+                  ? localizations.expandedIconTapHint
+                  : localizations.collapsedIconTapHint,
+              icon: Icon(expanded ? Icons.menu_open : Icons.menu),
+              onPressed: () => setState(() => _railExpanded = !expanded),
+            ),
+          ),
+        ),
+      if (trailingAction != null)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          child: Align(
+            alignment: expanded
+                ? AlignmentDirectional.centerStart
+                : AlignmentDirectional.center,
+            child: trailingAction,
+          ),
+        ),
+    ];
+    return Scaffold(
+      appBar: appBar,
+      backgroundColor: widget.backgroundColor,
+      body: Row(
+        children: [
+          AnimatedContainer(
+            duration: _motion(context, const Duration(milliseconds: 250)),
+            curve: Curves.easeOutCubic,
+            width: expanded
+                ? style.expandedRailWidth ??
+                    AdaptiveNavScaffold.expandedRailWidth
+                : style.railWidth ?? AdaptiveNavScaffold.railWidth,
+            child: SideRail(
+              destinations: destinations,
+              currentIndex: currentIndex,
+              onSelect: onSelect,
+              groups: groups,
+              openGroup: _openGroup,
+              onGroupTap: _toggleGroup,
+              expanded: expanded,
+              alignment: config.tabletRailAlignment,
+              leading: leading.isEmpty
+                  ? null
+                  : Column(mainAxisSize: MainAxisSize.min, children: leading),
+              style: style,
             ),
           ),
           const VerticalDivider(width: 1),
@@ -584,17 +822,20 @@ class _NavColors {
 
   /// [boldSelected] is for the cover rail, whose labels are its only cue
   /// besides the pill.
+  ///
+  /// [base] replaces `labelMedium` under the style's own label styles.
   TextStyle label({
     required bool selected,
     bool disabled = false,
     bool boldSelected = false,
+    TextStyle? base,
   }) {
     final color = disabled
         ? this.disabled
         : selected
             ? _style.selectedColor ?? _scheme.onSurface
             : unselected;
-    return _labelBase
+    return (base ?? _labelBase)
         .copyWith(
           color: color,
           fontWeight: selected && boldSelected ? FontWeight.w600 : null,
@@ -604,8 +845,12 @@ class _NavColors {
   }
 }
 
-/// The cover display's rail: tabs low on the edge, under the thumb, with the
-/// trailing action at its foot.
+/// The cover display's rail, and this package's tablet side bar: tabs along
+/// an edge, with the trailing action after them.
+///
+/// With [groups], each group is a button that opens to show its tabs and
+/// closes the others; [openGroup] is the open one. [expanded] lays each tab
+/// out as a row, its label beside its icon, for a wide side bar.
 class SideRail extends StatelessWidget {
   const SideRail({
     super.key,
@@ -615,6 +860,11 @@ class SideRail extends StatelessWidget {
     this.trailingAction,
     this.style = const AdaptiveNavStyle(),
     this.alignment,
+    this.groups,
+    this.openGroup,
+    this.onGroupTap,
+    this.expanded = false,
+    this.leading,
   });
 
   final List<NavDestination> destinations;
@@ -626,6 +876,18 @@ class SideRail extends StatelessWidget {
   /// Where the tabs sit along the rail (default:
   /// [FoldAdaptiveConfig.coverRailAlignment] from the `FoldScope`).
   final CoverRailAlignment? alignment;
+
+  /// Groups over [destinations], which must hold their tabs in order.
+  final List<NavGroup>? groups;
+  final int? openGroup;
+  final ValueChanged<int>? onGroupTap;
+
+  /// Rows with the label beside the icon, instead of under it.
+  final bool expanded;
+
+  /// Pinned to the head of the rail whatever the [alignment], such as a menu
+  /// button.
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -650,7 +912,7 @@ class SideRail extends StatelessWidget {
                 minHeight:
                     constraints.hasBoundedHeight ? constraints.maxHeight : 0,
               ),
-              child: _column(railAlignment),
+              child: _column(context, railAlignment),
             ),
           ),
         ),
@@ -658,25 +920,135 @@ class SideRail extends StatelessWidget {
     );
   }
 
-  Widget _column(MainAxisAlignment railAlignment) {
-    return Column(
-      mainAxisAlignment: railAlignment,
-      children: [
-        if (railAlignment != MainAxisAlignment.end) const SizedBox(height: 8),
-        for (var i = 0; i < destinations.length; i++)
-          _RailItem(
-            destination: destinations[i],
-            selected: i == currentIndex,
-            onTap: () => onSelect(i),
-            style: style,
-          ),
-        if (trailingAction != null) ...[
-          const SizedBox(height: 16),
-          trailingAction!,
-        ],
+  Widget _column(BuildContext context, MainAxisAlignment railAlignment) {
+    final tabs = [
+      ..._tabs(context),
+      if (trailingAction != null) ...[
         const SizedBox(height: 16),
+        trailingAction!,
+      ],
+      const SizedBox(height: 16),
+    ];
+    final crossAxis =
+        expanded ? CrossAxisAlignment.stretch : CrossAxisAlignment.center;
+    final leading = this.leading;
+    if (leading == null) {
+      return Column(
+        mainAxisAlignment: railAlignment,
+        crossAxisAlignment: crossAxis,
+        children: [
+          if (railAlignment != MainAxisAlignment.end) const SizedBox(height: 8),
+          ...tabs,
+        ],
+      );
+    }
+    // The leading widget stays at the head; the tabs take the alignment in
+    // the space below it. No Expanded: the column may be unbounded.
+    return Column(
+      mainAxisAlignment: railAlignment == MainAxisAlignment.start
+          ? MainAxisAlignment.start
+          : MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: crossAxis,
+      children: [
+        // Padding, not a SizedBox: a third child would take the head of the
+        // spaceBetween column and push the leading widget down.
+        Padding(padding: const EdgeInsets.only(top: 8), child: leading),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: crossAxis,
+          children: tabs,
+        ),
+        if (railAlignment == MainAxisAlignment.center) const SizedBox(),
       ],
     );
+  }
+
+  Widget _tab(int i, {bool indented = false}) => expanded
+      ? _ExpandedRailItem(
+          destination: destinations[i],
+          selected: i == currentIndex,
+          onTap: () => onSelect(i),
+          style: style,
+          indented: indented,
+        )
+      : _RailItem(
+          destination: destinations[i],
+          selected: i == currentIndex,
+          onTap: () => onSelect(i),
+          style: style,
+        );
+
+  List<Widget> _tabs(BuildContext context) {
+    final groups = this.groups;
+    if (groups == null) {
+      return [for (var i = 0; i < destinations.length; i++) _tab(i)];
+    }
+    final scheme = Theme.of(context).colorScheme;
+    final duration = _motion(
+      context,
+      style.animationDuration ?? const Duration(milliseconds: 200),
+    );
+    final children = <Widget>[];
+    var first = 0;
+    for (var g = 0; g < groups.length; g++) {
+      final group = groups[g];
+      final count = group.destinations.length;
+      final open = openGroup == g;
+      final holdsCurrent =
+          currentIndex >= first && currentIndex < first + count;
+      final header = group.header(
+        badge: group.destinations.any((d) => d.badge != null) ? '' : null,
+      );
+      // A closed group holding the current tab shows as selected, so the
+      // user can still see where they are.
+      children.add(expanded
+          ? _ExpandedRailItem(
+              destination: header,
+              selected: holdsCurrent && !open,
+              onTap: () => onGroupTap?.call(g),
+              style: style,
+              groupOpen: open,
+            )
+          : _RailItem(
+              destination: header,
+              selected: holdsCurrent && !open,
+              onTap: () => onGroupTap?.call(g),
+              style: style,
+              groupOpen: open,
+            ));
+      children.add(AnimatedSize(
+        duration: duration,
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: !open
+            ? const SizedBox(width: double.infinity)
+            : _RevealOnOpen(
+                duration: duration,
+                child: Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(
+                      horizontal: expanded ? 12 : 6, vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    color: style.groupBackgroundColor ??
+                        scheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(expanded ? 20 : 16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: expanded
+                        ? CrossAxisAlignment.stretch
+                        : CrossAxisAlignment.center,
+                    children: [
+                      for (var i = first; i < first + count; i++)
+                        _tab(i, indented: true),
+                    ],
+                  ),
+                ),
+              ),
+      ));
+      first += count;
+    }
+    return children;
   }
 }
 
@@ -686,12 +1058,16 @@ class _RailItem extends StatelessWidget {
     required this.selected,
     required this.onTap,
     required this.style,
+    this.groupOpen,
   });
 
   final NavDestination destination;
   final bool selected;
   final VoidCallback onTap;
   final AdaptiveNavStyle style;
+
+  /// Set on a group's button: whether the group is open.
+  final bool? groupOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -704,10 +1080,17 @@ class _RailItem extends StatelessWidget {
       NavLabelBehavior.onlySelected => selected,
       _ => true,
     };
+    final groupOpen = this.groupOpen;
+    final labelStyle = colors.label(
+      selected: selected,
+      disabled: !enabled,
+      boldSelected: true,
+    );
     return Semantics(
       selected: selected,
       button: true,
       enabled: enabled,
+      expanded: groupOpen,
       label: destination.label,
       excludeSemantics: true,
       child: InkWell(
@@ -752,13 +1135,158 @@ class _RailItem extends StatelessWidget {
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
-                    style: colors.label(
-                      selected: selected,
-                      disabled: !enabled,
-                      boldSelected: true,
-                    ),
+                    style: labelStyle,
                   ),
                 ],
+                if (groupOpen != null)
+                  AnimatedRotation(
+                    turns: groupOpen ? 0.5 : 0,
+                    duration:
+                        _motion(context, const Duration(milliseconds: 200)),
+                    child: Icon(
+                      Icons.expand_more,
+                      size: 16,
+                      color: labelStyle.color,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Keeps a group's tabs in view while they open: on a short rail (a cover
+/// display on its side) they would otherwise open below its end.
+class _RevealOnOpen extends StatefulWidget {
+  const _RevealOnOpen({required this.duration, required this.child});
+
+  /// How long the group takes to open; the rail follows it that long.
+  final Duration duration;
+  final Widget child;
+
+  @override
+  State<_RevealOnOpen> createState() => _RevealOnOpenState();
+}
+
+class _RevealOnOpenState extends State<_RevealOnOpen> {
+  Duration? _start;
+
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback(_reveal);
+  }
+
+  // Runs after each frame of the opening animation, without a timer: once
+  // the frames stop, so does this.
+  void _reveal(Duration timestamp) {
+    if (!mounted) return;
+    final start = _start ??= timestamp;
+    Scrollable.ensureVisible(
+      context,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    );
+    if (timestamp - start < widget.duration) {
+      SchedulerBinding.instance.addPostFrameCallback(_reveal);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// A tab of the expanded side bar: a full-width row, the label beside the
+/// icon, inside the selection pill.
+class _ExpandedRailItem extends StatelessWidget {
+  const _ExpandedRailItem({
+    required this.destination,
+    required this.selected,
+    required this.onTap,
+    required this.style,
+    this.groupOpen,
+    this.indented = false,
+  });
+
+  final NavDestination destination;
+  final bool selected;
+  final VoidCallback onTap;
+  final AdaptiveNavStyle style;
+  final bool? groupOpen;
+
+  /// A tab inside an open group.
+  final bool indented;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final colors = _NavColors(context, style);
+    final enabled = destination.enabled;
+    final iconSize = style.iconSize ?? 24;
+    final groupOpen = this.groupOpen;
+    // A wide row has room for the larger label style.
+    final labelStyle = colors.label(
+      selected: selected,
+      disabled: !enabled,
+      boldSelected: true,
+      base: Theme.of(context).textTheme.labelLarge,
+    );
+    final shape = style.indicatorShape ?? const StadiumBorder();
+    return Semantics(
+      selected: selected,
+      button: true,
+      enabled: enabled,
+      expanded: groupOpen,
+      label: destination.label,
+      excludeSemantics: true,
+      child: Padding(
+        padding:
+            EdgeInsets.symmetric(horizontal: indented ? 4 : 12, vertical: 2),
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          customBorder: shape,
+          child: AnimatedContainer(
+            duration: _motion(
+              context,
+              style.animationDuration ?? const Duration(milliseconds: 200),
+            ),
+            constraints: BoxConstraints(minHeight: math.max(48, iconSize + 24)),
+            // A group's tabs sit in from its header.
+            padding:
+                EdgeInsetsDirectional.fromSTEB(indented ? 24 : 16, 8, 12, 8),
+            decoration: ShapeDecoration(
+              color: selected
+                  ? style.indicatorColor ?? scheme.secondaryContainer
+                  : Colors.transparent,
+              shape: shape,
+            ),
+            child: Row(
+              children: [
+                destination.buildIcon(
+                  selected: selected,
+                  color: enabled
+                      ? (selected ? colors.selected : colors.unselected)
+                      : colors.disabled,
+                  size: iconSize,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    destination.label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: labelStyle,
+                  ),
+                ),
+                if (groupOpen != null)
+                  AnimatedRotation(
+                    turns: groupOpen ? 0.5 : 0,
+                    duration:
+                        _motion(context, const Duration(milliseconds: 200)),
+                    child: Icon(Icons.expand_more, color: labelStyle.color),
+                  ),
               ],
             ),
           ),

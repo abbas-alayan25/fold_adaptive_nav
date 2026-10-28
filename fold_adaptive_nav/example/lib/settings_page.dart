@@ -17,6 +17,9 @@ class ExampleSettings {
     this.narrowCoversAsPhones = false,
     this.flipsAsPhones = true,
     this.debugOverlay = false,
+    this.tabletRailStyle = TabletRailStyle.standard,
+    this.tabletRailAlignment = CoverRailAlignment.top,
+    this.groupTabs = false,
   });
 
   final TabletNavigation tabletNavigation;
@@ -32,6 +35,11 @@ class ExampleSettings {
   final bool narrowCoversAsPhones;
   final bool flipsAsPhones;
   final bool debugOverlay;
+  final TabletRailStyle tabletRailStyle;
+  final CoverRailAlignment tabletRailAlignment;
+
+  /// Puts the tabs under groups, which side bars open one at a time.
+  final bool groupTabs;
 
   FoldAdaptiveConfig get config => FoldAdaptiveConfig(
         tabletNavigation: tabletNavigation,
@@ -44,6 +52,8 @@ class ExampleSettings {
         // Fold and iPhone Duo covers keep the rail.
         coverMinShortestSide: narrowCoversAsPhones ? 380 : 0,
         treatOpenedFlipsAsPhones: flipsAsPhones,
+        tabletRailStyle: tabletRailStyle,
+        tabletRailAlignment: tabletRailAlignment,
       );
 
   ExampleSettings copyWith({
@@ -58,6 +68,9 @@ class ExampleSettings {
     bool? narrowCoversAsPhones,
     bool? flipsAsPhones,
     bool? debugOverlay,
+    TabletRailStyle? tabletRailStyle,
+    CoverRailAlignment? tabletRailAlignment,
+    bool? groupTabs,
   }) =>
       ExampleSettings(
         tabletNavigation: tabletNavigation ?? this.tabletNavigation,
@@ -71,6 +84,9 @@ class ExampleSettings {
         narrowCoversAsPhones: narrowCoversAsPhones ?? this.narrowCoversAsPhones,
         flipsAsPhones: flipsAsPhones ?? this.flipsAsPhones,
         debugOverlay: debugOverlay ?? this.debugOverlay,
+        tabletRailStyle: tabletRailStyle ?? this.tabletRailStyle,
+        tabletRailAlignment: tabletRailAlignment ?? this.tabletRailAlignment,
+        groupTabs: groupTabs ?? this.groupTabs,
       );
 }
 
@@ -119,13 +135,58 @@ class _SettingsPageState extends State<SettingsPage> {
             segments: const [
               ButtonSegment(
                 value: TabletNavigation.bottomBar,
-                label: Text('Bottom bar'),
+                label: Text('Bottom'),
               ),
-              ButtonSegment(value: TabletNavigation.rail, label: Text('Rail')),
+              ButtonSegment(value: TabletNavigation.rail, label: Text('Side')),
+              ButtonSegment(
+                value: TabletNavigation.railInLandscape,
+                label: Text('Landscape'),
+              ),
             ],
             selected: {s.tabletNavigation},
             onSelectionChanged: (v) =>
                 widget.onChanged(s.copyWith(tabletNavigation: v.first)),
+          ),
+          const _Header('Tablet side bar'),
+          SegmentedButton<TabletRailStyle>(
+            segments: const [
+              ButtonSegment(
+                value: TabletRailStyle.standard,
+                label: Text('Icons'),
+              ),
+              ButtonSegment(
+                value: TabletRailStyle.expanded,
+                label: Text('Expanded'),
+              ),
+            ],
+            selected: {s.tabletRailStyle},
+            onSelectionChanged: (v) =>
+                widget.onChanged(s.copyWith(tabletRailStyle: v.first)),
+          ),
+          const SizedBox(height: 8),
+          SegmentedButton<CoverRailAlignment>(
+            segments: const [
+              ButtonSegment(value: CoverRailAlignment.top, label: Text('Top')),
+              ButtonSegment(
+                value: CoverRailAlignment.center,
+                label: Text('Center'),
+              ),
+              ButtonSegment(
+                value: CoverRailAlignment.bottom,
+                label: Text('Bottom'),
+              ),
+            ],
+            selected: {s.tabletRailAlignment},
+            onSelectionChanged: (v) =>
+                widget.onChanged(s.copyWith(tabletRailAlignment: v.first)),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Group the tabs'),
+            subtitle: const Text(
+                'Side bars and the cover rail open one group at a time'),
+            value: s.groupTabs,
+            onChanged: (v) => widget.onChanged(s.copyWith(groupTabs: v)),
           ),
           const _Header('Cover rail side'),
           SegmentedButton<RailSide>(

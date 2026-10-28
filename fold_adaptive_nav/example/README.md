@@ -16,7 +16,7 @@ flutter test         # the same app on 12 device presets
 | Transfer | `CoverActionRow` and a three-step flow on `PinnedActionBody` |
 | Player | `TabletopLayout` and `FoldSafeArea`: video above the fold, controls below, when half open |
 | Gallery | `context.adaptive`, `AdaptiveBuilder` and `context.windowSizeClass` choosing the grid |
-| Settings | Every `FoldAdaptiveConfig` option, live: rail side and corner, tablet rail or drawer, narrow covers, flip phones, hide-on-scroll, RTL, debug overlay |
+| Settings | Every `FoldAdaptiveConfig` option, live: rail side and corner, tablet bottom bar, side bar or side bar in landscape, icon or expanded side bar and its alignment, tab groups, drawer, narrow covers, flip phones, hide-on-scroll, RTL, debug overlay |
 
 Six tabs don't fit a bottom bar: phones and the cover rail show four and
 **More**, which lists Gallery and Settings. The tablet rail and drawer show
@@ -36,7 +36,8 @@ void main() => runApp(
         config: const FoldAdaptiveConfig(
           coverRailSide: RailSide.trailingPhysicalRight,
           coverRailAlignment: CoverRailAlignment.bottom,
-          tabletNavigation: TabletNavigation.bottomBar,
+          tabletNavigation: TabletNavigation.railInLandscape, // side bar on its side
+          tabletRailStyle: TabletRailStyle.expanded,           // labels beside icons
           coverOrientations: [DeviceOrientation.portraitUp],
           lockPhonesToPortrait: true,
           drawerFromWidth: 1200,          // a drawer on wide tablets
@@ -97,8 +98,30 @@ class _HomeShellState extends State<HomeShell> {
 |---|---|
 | Phone | Floating bottom bar (four tabs and More) |
 | Closed foldable | Rail on the right, under the thumb; compact below 400 pt |
-| Opened foldable, tablet | Full-width bottom bar, or a rail |
+| Opened foldable, tablet, portrait | Full-width bottom bar |
+| Opened foldable, tablet, landscape | Expanded side bar; its menu button collapses it to icons |
+| Opened foldable in split screen | Same as a phone |
 | Tablet from 1200 pt | Navigation drawer |
+
+### Tab groups
+
+Turn on **Group the tabs** in Settings to see the same six tabs under four
+groups. Side bars and the cover rail open one group at a time; phones keep
+the plain bottom bar.
+
+```dart
+AdaptiveNavScaffold.grouped(
+  groups: [
+    NavGroup(icon: Icons.home_outlined, label: 'Home', destinations: [device, inbox]),
+    NavGroup(icon: Icons.account_balance_wallet_outlined, label: 'Money', destinations: [transfer]),
+    NavGroup(icon: Icons.perm_media_outlined, label: 'Media', destinations: [player, gallery]),
+    NavGroup(icon: Icons.settings_outlined, label: 'App', destinations: [settings]),
+  ],
+  currentIndex: _tab, // 0–5 across the groups, in order
+  onSelect: (i) => setState(() => _tab = i),
+  body: IndexedStack(index: _tab, children: pages),
+)
+```
 
 ## 3. A list and its detail
 

@@ -44,6 +44,8 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     this.barMargin,
     this.barMaxWidth,
     this.railWidth,
+    this.expandedRailWidth,
+    this.groupBackgroundColor,
     this.compactRailWidth,
     this.railAlignment,
     this.animationDuration,
@@ -101,6 +103,14 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// [AdaptiveNavScaffold.railWidth]).
   final double? railWidth;
 
+  /// Width of the expanded tablet side bar (default:
+  /// [AdaptiveNavScaffold.expandedRailWidth]).
+  final double? expandedRailWidth;
+
+  /// Fill behind the tabs of an open tab group on a side bar (default:
+  /// `surfaceContainerHighest`).
+  final Color? groupBackgroundColor;
+
   /// Width of the compact cover rail, on covers narrower than
   /// `FoldAdaptiveConfig.compactCoverRailBelow` (default:
   /// [AdaptiveNavScaffold.compactRailWidth]). Its labels are hidden.
@@ -140,6 +150,8 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barMargin: other.barMargin,
       barMaxWidth: other.barMaxWidth,
       railWidth: other.railWidth,
+      expandedRailWidth: other.expandedRailWidth,
+      groupBackgroundColor: other.groupBackgroundColor,
       compactRailWidth: other.compactRailWidth,
       railAlignment: other.railAlignment,
       animationDuration: other.animationDuration,
@@ -164,6 +176,8 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     EdgeInsets? barMargin,
     double? barMaxWidth,
     double? railWidth,
+    double? expandedRailWidth,
+    Color? groupBackgroundColor,
     double? compactRailWidth,
     MainAxisAlignment? railAlignment,
     Duration? animationDuration,
@@ -185,6 +199,8 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barMargin: barMargin ?? this.barMargin,
       barMaxWidth: barMaxWidth ?? this.barMaxWidth,
       railWidth: railWidth ?? this.railWidth,
+      expandedRailWidth: expandedRailWidth ?? this.expandedRailWidth,
+      groupBackgroundColor: groupBackgroundColor ?? this.groupBackgroundColor,
       compactRailWidth: compactRailWidth ?? this.compactRailWidth,
       railAlignment: railAlignment ?? this.railAlignment,
       animationDuration: animationDuration ?? this.animationDuration,
@@ -219,6 +235,10 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
           ? lerpDouble(barMaxWidth, other.barMaxWidth, t)
           : pick(barMaxWidth, other.barMaxWidth),
       railWidth: lerpDouble(railWidth, other.railWidth, t),
+      expandedRailWidth:
+          lerpDouble(expandedRailWidth, other.expandedRailWidth, t),
+      groupBackgroundColor:
+          Color.lerp(groupBackgroundColor, other.groupBackgroundColor, t),
       compactRailWidth: lerpDouble(compactRailWidth, other.compactRailWidth, t),
       railAlignment: pick(railAlignment, other.railAlignment),
       animationDuration: pick(animationDuration, other.animationDuration),
@@ -244,12 +264,15 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       other.barMargin == barMargin &&
       other.barMaxWidth == barMaxWidth &&
       other.railWidth == railWidth &&
+      other.expandedRailWidth == expandedRailWidth &&
+      other.groupBackgroundColor == groupBackgroundColor &&
       other.compactRailWidth == compactRailWidth &&
       other.railAlignment == railAlignment &&
       other.animationDuration == animationDuration;
 
   @override
-  int get hashCode => Object.hash(
+  // More fields than Object.hash takes.
+  int get hashCode => Object.hashAll([
         backgroundColor,
         indicatorColor,
         indicatorShape,
@@ -266,8 +289,10 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
         barMargin,
         barMaxWidth,
         railWidth,
+        expandedRailWidth,
+        groupBackgroundColor,
         compactRailWidth,
         railAlignment,
         animationDuration,
-      );
+      ]);
 }

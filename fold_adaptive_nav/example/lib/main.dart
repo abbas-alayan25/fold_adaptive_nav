@@ -114,42 +114,84 @@ class _HomeShellState extends State<HomeShell> {
     ),
   ];
 
+  // The same tabs in groups, in the same order, so the page indexes match.
+  static final _groups = [
+    NavGroup(
+      icon: Icons.home_outlined,
+      selectedIcon: Icons.home,
+      label: 'Home',
+      destinations: _destinations.sublist(0, 2),
+    ),
+    NavGroup(
+      icon: Icons.account_balance_wallet_outlined,
+      selectedIcon: Icons.account_balance_wallet,
+      label: 'Money',
+      destinations: _destinations.sublist(2, 3),
+    ),
+    NavGroup(
+      icon: Icons.perm_media_outlined,
+      selectedIcon: Icons.perm_media,
+      label: 'Media',
+      destinations: _destinations.sublist(3, 5),
+    ),
+    NavGroup(
+      icon: Icons.settings_outlined,
+      selectedIcon: Icons.settings,
+      label: 'App',
+      destinations: _destinations.sublist(5),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // A FAB on phones and tablets, the foot of the rail on the cover display.
+    final scan = FloatingActionButton(
+      tooltip: 'Scan',
+      onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Scan tapped')),
+      ),
+      child: const Icon(Icons.qr_code_scanner),
+    );
+    final body = IndexedStack(
+      index: _tab,
+      children: [
+        const DevicePage(),
+        const InboxPage(),
+        const TransferPage(),
+        const PlayerPage(),
+        const GalleryPage(),
+        SettingsPage(
+          settings: widget.settings,
+          onChanged: widget.onSettingsChanged,
+        ),
+      ],
+    );
+    void select(int i) => setState(() => _tab = i);
+    final hide = widget.settings.hideBarOnScroll;
     return FoldListener(
       onPostureChanged: (previous, current) =>
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         duration: const Duration(seconds: 2),
         content: Text('Posture: ${previous.name} → ${current.name}'),
       )),
-      child: AdaptiveNavScaffold(
-        destinations: _destinations,
-        currentIndex: _tab,
-        onSelect: (i) => setState(() => _tab = i),
-        hideBarOnScroll: widget.settings.hideBarOnScroll,
-        // A FAB on phones and tablets, the foot of the rail on the cover display.
-        trailingAction: FloatingActionButton(
-          tooltip: 'Scan',
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Scan tapped')),
-          ),
-          child: const Icon(Icons.qr_code_scanner),
-        ),
-        body: IndexedStack(
-          index: _tab,
-          children: [
-            const DevicePage(),
-            const InboxPage(),
-            const TransferPage(),
-            const PlayerPage(),
-            const GalleryPage(),
-            SettingsPage(
-              settings: widget.settings,
-              onChanged: widget.onSettingsChanged,
+      // Same widget type either way, so switching keeps the pages' state.
+      child: widget.settings.groupTabs
+          ? AdaptiveNavScaffold.grouped(
+              groups: _groups,
+              currentIndex: _tab,
+              onSelect: select,
+              hideBarOnScroll: hide,
+              trailingAction: scan,
+              body: body,
+            )
+          : AdaptiveNavScaffold(
+              destinations: _destinations,
+              currentIndex: _tab,
+              onSelect: select,
+              hideBarOnScroll: hide,
+              trailingAction: scan,
+              body: body,
             ),
-          ],
-        ),
-      ),
     );
   }
 }
