@@ -1,3 +1,8 @@
+## 1.4.1
+
+* New screenshots from a Pixel 10 Pro Fold and an iPhone Duo: list and
+  detail at the fold, tabletop, the cover thumb column and More.
+
 ## 1.4.0
 
 * Add `AdaptiveListDetail`: a list and its open item, side by side at the
@@ -19,8 +24,6 @@
 * The example shows every feature: list and detail, tabletop, adaptive grid
   and sheets, More, drawer, hide-on-scroll and the debug overlay, with a
   test that runs it on every device preset.
-* New screenshots from a Pixel 10 Pro Fold and an iPhone Duo: list and
-  detail at the fold, tabletop, the cover thumb column and More.
 
 ## 1.3.0
 
