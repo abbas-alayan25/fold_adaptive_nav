@@ -86,7 +86,8 @@ void main() {
             case FormFactor.tablet:
               expect(find.byType(SideRail), findsNothing);
               final bar = tester.getRect(find.byType(NavigationBar));
-              expect(bar.width, lessThanOrEqualTo(560));
+              // Full width by default, inside the 12 pt side margins.
+              expect(bar.width, size.width - 24);
               expect(bar.center.dx, closeTo(size.width / 2, 1));
           }
         });

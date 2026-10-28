@@ -42,6 +42,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     this.barHeight,
     this.barBorderRadius,
     this.barMargin,
+    this.barMaxWidth,
     this.railWidth,
     this.compactRailWidth,
     this.railAlignment,
@@ -90,6 +91,12 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
   /// the sides and bottom).
   final EdgeInsets? barMargin;
 
+  /// Width cap of the bottom bar, centred, on every form factor that shows
+  /// one. Wins over `FoldAdaptiveConfig.tabletBottomBarMaxWidth` (default:
+  /// full width). A flat bar keeps its background edge to edge and caps only
+  /// its tabs.
+  final double? barMaxWidth;
+
   /// Width of the cover display's rail (default:
   /// [AdaptiveNavScaffold.railWidth]).
   final double? railWidth;
@@ -131,6 +138,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barHeight: other.barHeight,
       barBorderRadius: other.barBorderRadius,
       barMargin: other.barMargin,
+      barMaxWidth: other.barMaxWidth,
       railWidth: other.railWidth,
       compactRailWidth: other.compactRailWidth,
       railAlignment: other.railAlignment,
@@ -154,6 +162,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
     double? barHeight,
     BorderRadius? barBorderRadius,
     EdgeInsets? barMargin,
+    double? barMaxWidth,
     double? railWidth,
     double? compactRailWidth,
     MainAxisAlignment? railAlignment,
@@ -174,6 +183,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barHeight: barHeight ?? this.barHeight,
       barBorderRadius: barBorderRadius ?? this.barBorderRadius,
       barMargin: barMargin ?? this.barMargin,
+      barMaxWidth: barMaxWidth ?? this.barMaxWidth,
       railWidth: railWidth ?? this.railWidth,
       compactRailWidth: compactRailWidth ?? this.compactRailWidth,
       railAlignment: railAlignment ?? this.railAlignment,
@@ -203,6 +213,11 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       barBorderRadius:
           BorderRadius.lerp(barBorderRadius, other.barBorderRadius, t),
       barMargin: EdgeInsets.lerp(barMargin, other.barMargin, t),
+      // Infinity doesn't interpolate (it turns into NaN); switch halfway.
+      barMaxWidth: (barMaxWidth?.isFinite ?? true) &&
+              (other.barMaxWidth?.isFinite ?? true)
+          ? lerpDouble(barMaxWidth, other.barMaxWidth, t)
+          : pick(barMaxWidth, other.barMaxWidth),
       railWidth: lerpDouble(railWidth, other.railWidth, t),
       compactRailWidth: lerpDouble(compactRailWidth, other.compactRailWidth, t),
       railAlignment: pick(railAlignment, other.railAlignment),
@@ -227,6 +242,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
       other.barHeight == barHeight &&
       other.barBorderRadius == barBorderRadius &&
       other.barMargin == barMargin &&
+      other.barMaxWidth == barMaxWidth &&
       other.railWidth == railWidth &&
       other.compactRailWidth == compactRailWidth &&
       other.railAlignment == railAlignment &&
@@ -248,6 +264,7 @@ class AdaptiveNavStyle extends ThemeExtension<AdaptiveNavStyle> {
         barHeight,
         barBorderRadius,
         barMargin,
+        barMaxWidth,
         railWidth,
         compactRailWidth,
         railAlignment,

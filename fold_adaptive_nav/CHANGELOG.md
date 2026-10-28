@@ -1,3 +1,12 @@
+## 1.5.0
+
+* The bottom bar on tablets and opened foldables is full width by default:
+  `FoldAdaptiveConfig.tabletBottomBarMaxWidth` now defaults to
+  `double.infinity`. Set it to 560 for the old look.
+* Add `AdaptiveNavStyle.barMaxWidth`, to cap the bottom bar from the theme or
+  per screen, on every form factor. It wins over the config.
+* A capped flat bar keeps its background edge to edge and caps only its tabs.
+
 ## 1.4.1
 
 * New screenshots from a Pixel 10 Pro Fold and an iPhone Duo: list and

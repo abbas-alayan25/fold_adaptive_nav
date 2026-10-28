@@ -8,7 +8,7 @@ and switches your app's navigation by itself:
 | Ordinary phone | Floating bottom bar | Pinned to the bottom | Portrait |
 | Foldable, closed (cover display) | Rail on the physical right, under the thumb | Thumb column on the right | Portrait (configurable) |
 | Foldable, opened | Same as tablet | Same as tablet | All |
-| Tablet | Bottom bar capped at 560 pt (or a rail) | Bottom, or a side panel from 840 pt | All |
+| Tablet | Full-width bottom bar, optionally capped (or a rail) | Bottom, or a side panel from 840 pt | All |
 
 You add one widget and no device checks. For the content itself there are
 panes that meet at the fold (`FoldSplitView`, `TabletopLayout`),
@@ -294,6 +294,7 @@ AdaptiveNavScaffold(
 | `labelBehavior` | `NavLabelBehavior.alwaysShow` |
 | `elevation`, `shadowColor` | 3, `shadow` (bottom bar) |
 | `barHeight`, `barBorderRadius`, `barMargin` | 68, 32, 12 at sides and bottom (see below) |
+| `barMaxWidth` | full width (see below) |
 | `railWidth` | 88 (cover rail) |
 | `railAlignment` | follows `coverRailAlignment`; set it for other alignments such as `spaceEvenly` |
 | `animationDuration` | 200 ms on the cover rail |
@@ -304,6 +305,22 @@ On phones with a home indicator, a floating bar overlaps the empty part of
 that area: on an iPhone it sits 21 pt from the bottom, not 34 pt. A flat bar
 (`barMargin` with a bottom of 0) fills the area down to the screen edge and
 keeps its tabs above the indicator.
+
+### Bar width on tablets
+
+The bottom bar is full width by default. To keep the tabs together on wide
+screens, cap it, centred, in the config (tablets and opened foldables) or in
+the style (everywhere, and it wins over the config):
+
+```dart
+const FoldAdaptiveConfig(tabletBottomBarMaxWidth: 560)
+
+const AdaptiveNavStyle(barMaxWidth: 560)
+```
+
+A floating bar shrinks to the cap. A flat bar keeps its background edge to
+edge and caps only its tabs, so it never turns into a slab in the middle of
+the screen.
 
 ### With go_router
 

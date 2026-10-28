@@ -97,7 +97,7 @@ class _HomeShellState extends State<HomeShell> {
 |---|---|
 | Phone | Floating bottom bar (four tabs and More) |
 | Closed foldable | Rail on the right, under the thumb; compact below 400 pt |
-| Opened foldable, tablet | Bottom bar capped at 560 pt, or a rail |
+| Opened foldable, tablet | Full-width bottom bar, or a rail |
 | Tablet from 1200 pt | Navigation drawer |
 
 ## 3. A list and its detail

@@ -297,6 +297,57 @@ void main() {
     });
   }
 
+  group('bar width', () {
+    const tablet = Size(1366, 1024);
+    Rect barMaterial(WidgetTester tester) => tester.getRect(find
+        .ancestor(
+            of: find.byType(NavigationBar), matching: find.byType(Material))
+        .first);
+
+    testWidgets('a config cap centres a floating bar', (tester) async {
+      setWindowSize(tester, tablet);
+      await pumpScoped(tester, _tabs(),
+          config: const FoldAdaptiveConfig(tabletBottomBarMaxWidth: 560));
+      final bar = barMaterial(tester);
+      expect(bar.width, 560 - 24);
+      expect(bar.center.dx, closeTo(tablet.width / 2, 1));
+    });
+
+    testWidgets('the style cap wins over the config', (tester) async {
+      setWindowSize(tester, tablet);
+      await pumpScoped(
+          tester, _tabs(style: const AdaptiveNavStyle(barMaxWidth: 700)),
+          config: const FoldAdaptiveConfig(tabletBottomBarMaxWidth: 560));
+      expect(barMaterial(tester).width, 700 - 24);
+    });
+
+    testWidgets('the style cap applies on phones too', (tester) async {
+      setWindowSize(tester, _phone);
+      await pumpScoped(
+          tester, _tabs(style: const AdaptiveNavStyle(barMaxWidth: 300)));
+      final bar = barMaterial(tester);
+      expect(bar.width, 300 - 24);
+      expect(bar.center.dx, closeTo(_phone.width / 2, 1));
+    });
+
+    testWidgets('a capped flat bar keeps its background edge to edge',
+        (tester) async {
+      setWindowSize(tester, tablet);
+      await pumpScoped(tester, _tabs(style: _flat.copyWith(barMaxWidth: 560)));
+      expect(barMaterial(tester).width, tablet.width);
+      final tabs = tester.getRect(find.byType(NavigationBar));
+      expect(tabs.width, 560);
+      expect(tabs.center.dx, closeTo(tablet.width / 2, 1));
+    });
+
+    test('infinity interpolates without NaN', () {
+      const a = AdaptiveNavStyle(barMaxWidth: double.infinity);
+      const b = AdaptiveNavStyle(barMaxWidth: 560);
+      expect(a.lerp(b, 0.25).barMaxWidth, double.infinity);
+      expect(a.lerp(b, 0.75).barMaxWidth, 560);
+    });
+  });
+
   test('merge, copyWith, lerp and equality', () {
     const a = AdaptiveNavStyle(barHeight: 60, railWidth: 80);
     const b = AdaptiveNavStyle(barHeight: 100);

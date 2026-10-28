@@ -255,7 +255,8 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
     final style = AdaptiveNavStyle.of(context).merge(widget.style);
     final drawerFrom = config.drawerFromWidth;
     return switch (context.formFactor) {
-      FormFactor.phone => _bottomBarScaffold(context, style, maxBarWidth: null),
+      FormFactor.phone =>
+        _bottomBarScaffold(context, style, maxBarWidth: style.barMaxWidth),
       FormFactor.cover => _coverScaffold(context, style, config),
       FormFactor.tablet
           when drawerFrom != null &&
@@ -266,7 +267,7 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
           : _bottomBarScaffold(
               context,
               style,
-              maxBarWidth: config.tabletBottomBarMaxWidth,
+              maxBarWidth: style.barMaxWidth ?? config.tabletBottomBarMaxWidth,
             ),
     };
   }
@@ -281,6 +282,7 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
       currentIndex: _barIndex,
       onSelect: _onBarSelect,
       style: style,
+      maxWidth: maxBarWidth,
     );
     // Slid by its own height, the bar and the gap below it leave the screen.
     bar = AnimatedSlide(
@@ -289,15 +291,6 @@ class _AdaptiveNavScaffoldState extends State<AdaptiveNavScaffold> {
       curve: Curves.easeOutCubic,
       child: bar,
     );
-    if (maxBarWidth != null) {
-      bar = Align(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxBarWidth),
-          child: bar,
-        ),
-      );
-    }
     return Scaffold(
       appBar: appBar,
       backgroundColor: widget.backgroundColor,
@@ -449,12 +442,17 @@ class _FloatingNavBar extends StatelessWidget {
     required this.currentIndex,
     required this.onSelect,
     required this.style,
+    this.maxWidth,
   });
 
   final List<NavDestination> destinations;
   final int currentIndex;
   final ValueChanged<int> onSelect;
   final AdaptiveNavStyle style;
+
+  /// Width cap, centred. A floating bar shrinks as a whole; a flat bar keeps
+  /// its background edge to edge and caps only its tabs.
+  final double? maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -471,7 +469,7 @@ class _FloatingNavBar extends StatelessWidget {
         ? 0.0
         : math.max(
             margin.bottom, inset - AdaptiveNavScaffold.homeIndicatorHeight);
-    return SafeArea(
+    final bar = SafeArea(
       top: false,
       bottom: false,
       child: Padding(
@@ -508,34 +506,37 @@ class _FloatingNavBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                child: NavigationBar(
-                  height: style.barHeight ?? 68,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  indicatorColor: style.indicatorColor,
-                  indicatorShape: style.indicatorShape,
-                  animationDuration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : style.animationDuration,
-                  labelBehavior: switch (style.labelBehavior) {
-                    NavLabelBehavior.onlySelected =>
-                      NavigationDestinationLabelBehavior.onlyShowSelected,
-                    NavLabelBehavior.alwaysHide =>
-                      NavigationDestinationLabelBehavior.alwaysHide,
-                    _ => NavigationDestinationLabelBehavior.alwaysShow,
-                  },
-                  selectedIndex: currentIndex,
-                  onDestinationSelected: onSelect,
-                  destinations: [
-                    for (final d in destinations)
-                      NavigationDestination(
-                        icon: d.buildIcon(selected: false, size: iconSize),
-                        selectedIcon:
-                            d.buildIcon(selected: true, size: iconSize),
-                        label: d.label,
-                        enabled: d.enabled,
-                      ),
-                  ],
+                child: _capWidth(
+                  flat ? maxWidth : null,
+                  NavigationBar(
+                    height: style.barHeight ?? 68,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    indicatorColor: style.indicatorColor,
+                    indicatorShape: style.indicatorShape,
+                    animationDuration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : style.animationDuration,
+                    labelBehavior: switch (style.labelBehavior) {
+                      NavLabelBehavior.onlySelected =>
+                        NavigationDestinationLabelBehavior.onlyShowSelected,
+                      NavLabelBehavior.alwaysHide =>
+                        NavigationDestinationLabelBehavior.alwaysHide,
+                      _ => NavigationDestinationLabelBehavior.alwaysShow,
+                    },
+                    selectedIndex: currentIndex,
+                    onDestinationSelected: onSelect,
+                    destinations: [
+                      for (final d in destinations)
+                        NavigationDestination(
+                          icon: d.buildIcon(selected: false, size: iconSize),
+                          selectedIcon:
+                              d.buildIcon(selected: true, size: iconSize),
+                          label: d.label,
+                          enabled: d.enabled,
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -543,7 +544,20 @@ class _FloatingNavBar extends StatelessWidget {
         ),
       ),
     );
+    return flat ? bar : _capWidth(maxWidth, bar);
   }
+}
+
+/// [child] centred and at most [maxWidth] wide; unchanged without a finite cap.
+Widget _capWidth(double? maxWidth, Widget child) {
+  if (maxWidth == null || maxWidth == double.infinity) return child;
+  return Align(
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: child,
+    ),
+  );
 }
 
 /// Icon and label colors for one [AdaptiveNavStyle], with the Material 3

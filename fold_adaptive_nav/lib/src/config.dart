@@ -72,7 +72,7 @@ class FoldAdaptiveConfig {
     this.manageOrientations = true,
     this.mediumBreakpoint = 600,
     this.expandedBreakpoint = 840,
-    this.tabletBottomBarMaxWidth = 560,
+    this.tabletBottomBarMaxWidth = double.infinity,
     this.coverMinShortestSide = 0,
     this.compactCoverRailBelow = 400,
     this.treatOpenedFlipsAsPhones = true,
@@ -102,7 +102,9 @@ class FoldAdaptiveConfig {
   /// Width from which tablet flows get a side panel (Material: 840).
   final double expandedBreakpoint;
 
-  /// Width cap of the tablet bottom bar; full width at 1366 pt looks broken.
+  /// Width cap of the bottom bar on tablets and opened foldables, centred.
+  /// Full width by default; 560 keeps the tabs together on wide screens.
+  /// `AdaptiveNavStyle.barMaxWidth` wins over it.
   final double tabletBottomBarMaxWidth;
 
   /// A closed foldable whose display is narrower than this on its shortest
