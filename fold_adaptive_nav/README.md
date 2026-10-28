@@ -32,15 +32,15 @@ the device; the layout follows `FoldScope`.
 
 | Closed: cover display | Opened |
 |:---:|:---:|
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_tabs.png" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_open_tabs.png" height="420" alt="Opened display with a bottom bar"> |
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_flow.png" height="420" alt="Flow step with a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_open_flow.png" height="420" alt="Flow step with a side panel"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_tabs.jpg" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_open_list_detail.jpg" height="420" alt="List and open message side by side at the fold"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_cover_flow.jpg" height="420" alt="Flow actions in a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/android_tabletop.jpg" height="420" alt="Half open in tabletop posture, controls below the fold"> |
 
 ### iOS (iPhone Duo)
 
 | Closed: cover display | Opened |
 |:---:|:---:|
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_tabs.png" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_tabs.png" height="300" alt="Opened display with a bottom bar"> |
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_flow.png" height="420" alt="Flow step with a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_flow.png" height="300" alt="Flow step with a side panel"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_tabs.jpg" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_tabs.jpg" height="420" alt="Opened display with a bottom bar"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_more.jpg" height="420" alt="More tab as a sheet on the cover display"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_more.jpg" height="300" alt="Opened on its side, More as a menu"> |
 
 ## Setup
 

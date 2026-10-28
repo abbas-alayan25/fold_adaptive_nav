@@ -8,26 +8,26 @@ repository: https://github.com/abbas-alayan25/fold_adaptive_nav/tree/main/fold_a
 topics: [foldable, adaptive, navigation, responsive]
 
 screenshots:
-  - description: Closed Pixel Fold. The cover display gets a rail on the right, under the thumb.
-    path: screenshots/android_cover_tabs.png
-  - description: Opened Pixel Fold. The same app switches to the tablet layout with a bottom bar.
-    path: screenshots/android_open_tabs.png
-  - description: A flow step on the cover display. The action moves into a thumb column on the right.
-    path: screenshots/android_cover_flow.png
-  - description: The same flow step opened. Progress and the action move into a side panel.
-    path: screenshots/android_open_flow.png
-  - description: Closed iPhone Duo. Posture, hinge angle and camera regions come from UIKit.
-    path: screenshots/ios_cover_tabs.png
-  - description: Opened iPhone Duo. Tablet layout, with the fold reported as a reserved region.
-    path: screenshots/ios_open_tabs.png
-  - description: A flow step on the iPhone Duo cover display.
-    path: screenshots/ios_cover_flow.png
-  - description: The same flow step on the opened iPhone Duo.
-    path: screenshots/ios_open_flow.png
-  - description: Review step on the opened iPhone Duo, with a checkbox footer and two actions.
-    path: screenshots/ios_open_review.png
-  - description: Review step on the opened Pixel Fold.
-    path: screenshots/android_open_review.png
+  - description: Closed iPhone Duo. Tabs move to a rail under the thumb; posture, hinge angle and camera regions come from UIKit.
+    path: screenshots/ios_cover_tabs.jpg
+  - description: Opened Pixel Fold. The list and the open message sit side by side, split at the fold.
+    path: screenshots/android_open_list_detail.jpg
+  - description: A flow on the Pixel Fold cover display. The actions move into a thumb column on the right.
+    path: screenshots/android_cover_flow.jpg
+  - description: Pixel Fold half open in tabletop posture. The video stays above the fold, the controls below it.
+    path: screenshots/android_tabletop.jpg
+  - description: Fold the Pixel Fold with a message open and it stays open, now with a back button.
+    path: screenshots/android_cover_detail.jpg
+  - description: Tabs beyond the rail's limit go behind More, here as a sheet on the iPhone Duo cover display.
+    path: screenshots/ios_cover_more.jpg
+  - description: Opened iPhone Duo on its side, with More as a menu above the floating bottom bar.
+    path: screenshots/ios_open_more.jpg
+  - description: Closed Pixel Fold. The same rail, with a badge on Inbox, on Android's cover display.
+    path: screenshots/android_cover_tabs.jpg
+  - description: A media screen on the iPhone Duo cover display, with the rail beside it.
+    path: screenshots/ios_cover_player.jpg
+  - description: Opened iPhone Duo. The tablet layout with a floating bottom bar.
+    path: screenshots/ios_open_tabs.jpg
 
 resolution: workspace
 
