@@ -11,7 +11,8 @@ import 'package:go_router/go_router.dart';
 void main() => runApp(
       FoldScope(
         config: const FoldAdaptiveConfig(
-          tabletNavigation: TabletNavigation.railInLandscape,
+          // A side bar on opened foldables and tablets, in every orientation.
+          tabletNavigation: TabletNavigation.rail,
           tabletRailStyle: TabletRailStyle.expanded,
         ),
         child: MaterialApp.router(

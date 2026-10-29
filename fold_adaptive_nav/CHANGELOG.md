@@ -18,6 +18,9 @@
   integration test that CI runs on a foldable emulator.
 * New: a go_router example, a migration guide from
   `flutter_adaptive_scaffold`, and a demo GIF.
+* The example and the go_router example open with a side bar on opened
+  foldables and tablets (`TabletNavigation.rail`).
+* New iPhone Duo screenshots: the side bar, turning, split screen and flows.
 
 ## 1.6.0
 

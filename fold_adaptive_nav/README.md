@@ -46,8 +46,13 @@ the device; the layout follows `FoldScope`.
 
 | Closed: cover display | Opened |
 |:---:|:---:|
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_tabs.jpg" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_tabs.jpg" height="420" alt="Opened display with a bottom bar"> |
-| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_more.jpg" height="420" alt="More tab as a sheet on the cover display"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_more.jpg" height="300" alt="Opened on its side, More as a menu"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_inbox.jpg" height="420" alt="Cover display with a rail on the right"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_side_bar.jpg" height="420" alt="Opened display with a side bar on the left"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_cover_flow.jpg" height="420" alt="Flow actions in a thumb column"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_flow.jpg" height="420" alt="Opened display with the flow's action at the bottom"> |
+
+| Opened on its side | Split screen |
+|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_side_bar_landscape.jpg" width="400" alt="Opened on its side, side bar beside the list and an empty detail pane"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_split_screen.jpg" width="400" alt="Split screen, the app in one half with a bottom bar"> |
+| <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_open_flow_panel.jpg" width="400" alt="Opened on its side, the flow's actions in a side panel"> | <img src="https://raw.githubusercontent.com/abbas-alayan25/fold_adaptive_nav/main/fold_adaptive_nav/screenshots/ios_split_screen_flow.jpg" width="400" alt="Split screen, the flow's action pinned to the bottom"> |
 
 ## Setup
 

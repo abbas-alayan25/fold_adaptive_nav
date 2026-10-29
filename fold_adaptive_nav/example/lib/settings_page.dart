@@ -6,7 +6,8 @@ import 'package:fold_adaptive_nav/fold_adaptive_nav.dart';
 @immutable
 class ExampleSettings {
   const ExampleSettings({
-    this.tabletNavigation = TabletNavigation.bottomBar,
+    // Opened foldables and tablets get a side bar, in every orientation.
+    this.tabletNavigation = TabletNavigation.rail,
     this.coverRailSide = RailSide.trailingPhysicalRight,
     this.coverRailAlignment = CoverRailAlignment.bottom,
     this.lockPhonesToPortrait = true,
@@ -17,7 +18,7 @@ class ExampleSettings {
     this.narrowCoversAsPhones = false,
     this.flipsAsPhones = true,
     this.debugOverlay = false,
-    this.tabletRailStyle = TabletRailStyle.standard,
+    this.tabletRailStyle = TabletRailStyle.expanded,
     this.tabletRailAlignment = CoverRailAlignment.top,
     this.groupTabs = false,
     this.look = NavLook.material,
